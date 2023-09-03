@@ -22,7 +22,7 @@ forge install devtooligan/solpretty
  - pp(uint256 value, memory SolPrettyOptions)
 
 ```solidity
-import {pp} from "solpretty/src/SolPretty.sol";
+import {pp} from "solpretty/src/solpretty.sol";
 
 pp(123123123123) //            -> "123,123,123,123" //  default
 pp(123123123123, 6) //         -> "123,123.123123" //   fixedDecimals = 6
