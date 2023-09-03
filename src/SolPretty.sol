@@ -23,6 +23,7 @@ P' "YY8P8PP"Y8888P"    8P'"Y88PI8 YY88888P8P      `Y8888P"Y88888P""Y8888P""Y88P"
 import {console2 as console} from "forge-std/Test.sol";
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
+
 function pp(uint256 value) pure returns (string memory) {
     return SolPretty.format(value);
 }
@@ -94,14 +95,14 @@ library SolPretty {
 
     function _getDefaultOpts() internal pure returns (SolPrettyOptions memory opts) {
         opts = SolPrettyOptions({
-            fixedDecimals: 0,
+            fixedDecimals: 0, // defaults to zero decimal places
             displayDecimals: type(uint256).max, // if this is less than fixedDecimals, value will be truncated
             decimalDelimter: ".",
             fractionalDelimiter: " ",
-            fractionalGroupingSize: 0,
+            fractionalGroupingSize: 0, // fractional (right side of decimal) grouping disabled by default
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 0
+            fixedWidth: 0 // automatic
         });
     }
 
@@ -181,9 +182,6 @@ library SolPretty {
             // adjust for fractional grouping delimiters
             bytes1 fractionalDelimiter;
             if (usingFractionalGrouping(opts)) {
-                // length currently represents the total number of digits
-                // subtract the fixed precision number of digits
-                // and divide by the grouping size to get the number of delimiters to account for
                 uint256 fractionalDigits = adjustedDecimals;
                 uint256 moar = (fractionalDigits / opts.fractionalGroupingSize);
                 if (fractionalDigits % opts.fractionalGroupingSize == 0) {
@@ -196,15 +194,11 @@ library SolPretty {
             // adjust for integer grouping delimiters
             bytes1 integerDelimiter;
             if (usingIntegerGrouping(opts)) {
-                // length currently represents the total number of digits
-                // subtract the fixed precision number of digits
-                // and divide by the grouping size to get the number of delimiters to account for
                 uint256 integerDigits = totalDigits - adjustedDecimals;
                 uint256 moar = integerDigits / opts.integerGroupingSize;
                 if (integerDigits % opts.integerGroupingSize == 0) {
                     moar -= 1;
                 }
-
                 length += moar;
                 integerDelimiter = opts.integerDelimiter;
             }
@@ -213,12 +207,12 @@ library SolPretty {
             bytes1 decimalDelimiter;
             if (adjustedDecimals > 0 && !isEmpty(opts.decimalDelimter)) {
                 length += 1;
-
                 decimalDelimiter = opts.decimalDelimter;
             }
 
+            // adjust for fixed width. reverts on too short
             if (opts.fixedWidth > 0) {
-                require(opts.fixedWidth >= length, "SolPretty: fixedWidth too small");
+                require(opts.fixedWidth >= length, "SolPretty: too short"); // twss
                 length = opts.fixedWidth;
             }
             string memory buffer = new string(length);
@@ -241,6 +235,7 @@ library SolPretty {
                     ptr := sub(ptr, 1)
                 }
                 if (value == 0) {
+                    // writing whitespace for long fixed width
                     assembly {
                         mstore8(ptr, byte(0, SPACE))
                         counter := add(counter, 1)
