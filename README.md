@@ -15,10 +15,11 @@ forge install devtooligan/solpretty
 ## Usage
 
 ### pp
- - pp(uint256 target, uint256 fixedDecimals)
- - pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals)
- - pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
- - pp(uint256 target, memory SolPrettyOptions)
+ - pp(uint256 value)
+ - pp(uint256 value, uint256 fixedDecimals)
+ - pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals)
+ - pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+ - pp(uint256 value, memory SolPrettyOptions)
 
 ```solidity
 import {pp} from "solpretty/src/SolPretty.sol";
@@ -43,15 +44,16 @@ SolPrettyOptions.integerDelimeter = bytes1(" ");
 pp(123123123123, solPrettyOptions); // -> "      123 123*123123"
 
 struct SolPrettyOptions {
-    uint256 fixedDecimals;             // default 0
-    uint256 displayDecimals;           // default 0
-    bytes1 decimalDelimter;            // default bytes(".")
-    bytes1 fractionalDelimiter;        // default bytes(" ")
-    uint256 fractionalGroupingSize;    // default 0
-    bytes1 integerDelimiter;           // default bytes(",")
-    uint256 integerGroupingSize;       // default 3
-    uint256 fixedWidth;                // default 0 (automatic)
+    uint256 fixedDecimals; //          default 0
+    uint256 displayDecimals; //        default type(uint256).max
+    bytes1 decimalDelimter; //         default "."
+    bytes1 fractionalDelimiter; //     default " "
+    uint256 fractionalGroupingSize; // default 0
+    bytes1 integerDelimiter; //        default ","
+    uint256 integerGroupingSize; //    default 3
+    uint256 fixedWidth; //             default 0 (automatic)
 }
+
 ```
 
 ### concat

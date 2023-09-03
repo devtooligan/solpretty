@@ -23,27 +23,27 @@ P' "YY8P8PP"Y8888P"    8P'"Y88PI8 YY88888P8P      `Y8888P"Y88888P""Y8888P""Y88P"
 import {console2 as console} from "forge-std/Test.sol";
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-function pp(uint256 target) pure returns (string memory) {
-    return SolPretty.format(target);
+function pp(uint256 value) pure returns (string memory) {
+    return SolPretty.format(value);
 }
 
-function pp(uint256 target, uint256 fixedDecimals) pure returns (string memory) {
-    return SolPretty.format(target, fixedDecimals);
+function pp(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
+    return SolPretty.format(value, fixedDecimals);
 }
 
-function pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
-    return SolPretty.format(target, fixedDecimals, displayDecimals);
+function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
+    return SolPretty.format(value, fixedDecimals, displayDecimals);
 }
 
-function pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
     pure
     returns (string memory)
 {
-    return SolPretty.format(target, fixedDecimals, displayDecimals, fixedWidth);
+    return SolPretty.format(value, fixedDecimals, displayDecimals, fixedWidth);
 }
 
-function pp(uint256 target, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
-    return SolPretty.format(target, opts);
+function pp(uint256 value, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
+    return SolPretty.format(value, opts);
 }
 
 library SolPretty {
@@ -54,11 +54,11 @@ library SolPretty {
 
     struct SolPrettyOptions {
         uint256 fixedDecimals; //          default 0
-        uint256 displayDecimals; //        default 0
-        bytes1 decimalDelimter; //         default bytes(".")
-        bytes1 fractionalDelimiter; //     default bytes(" ")
+        uint256 displayDecimals; //        default type(uint256).max
+        bytes1 decimalDelimter; //         default "."
+        bytes1 fractionalDelimiter; //     default " "
         uint256 fractionalGroupingSize; // default 0
-        bytes1 integerDelimiter; //        default bytes(",")
+        bytes1 integerDelimiter; //        default ","
         uint256 integerGroupingSize; //    default 3
         uint256 fixedWidth; //             default 0 (automatic)
     }
@@ -105,17 +105,17 @@ library SolPretty {
         });
     }
 
-    function format(uint256 target) internal pure returns (string memory) {
-        return _formatDecimal(target, _getDefaultOpts());
+    function format(uint256 value) internal pure returns (string memory) {
+        return _formatDecimal(value, _getDefaultOpts());
     }
 
-    function format(uint256 target, uint256 fixedDecimals) internal pure returns (string memory) {
+    function format(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
         SolPrettyOptions memory opts = _getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
-        return _formatDecimal(target, opts);
+        return _formatDecimal(value, opts);
     }
 
-    function format(uint256 target, uint256 fixedDecimals, uint256 displayDecimals)
+    function format(uint256 value, uint256 fixedDecimals, uint256 displayDecimals)
         internal
         pure
         returns (string memory)
@@ -123,10 +123,10 @@ library SolPretty {
         SolPrettyOptions memory opts = _getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
-        return _formatDecimal(target, opts);
+        return _formatDecimal(value, opts);
     }
 
-    function format(uint256 target, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+    function format(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
         internal
         pure
         returns (string memory)
@@ -135,11 +135,11 @@ library SolPretty {
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
         opts.fixedWidth = fixedWidth;
-        return _formatDecimal(target, opts);
+        return _formatDecimal(value, opts);
     }
 
-    function format(uint256 target, SolPrettyOptions memory opts) internal pure returns (string memory) {
-        return _formatDecimal(target, opts);
+    function format(uint256 value, SolPrettyOptions memory opts) internal pure returns (string memory) {
+        return _formatDecimal(value, opts);
     }
 
     function isEmpty(bytes1 x) internal pure returns (bool empty) {
