@@ -81,3 +81,5 @@ pp(1234).log(); // console2.log("1,234")
 pp(1234).concat(" Alice's balance").log(); // console2.log("1,234 Alice's balance")
 
 ```
+
+[solidity-shield]: https://img.shields.io/badge/solidity-%3E=0.8.4%20%3C=0.8.21-aa6746
