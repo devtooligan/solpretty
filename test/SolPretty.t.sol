@@ -37,6 +37,12 @@ contract SolPrettyTest is Test {
         assertTrue(pp(target, 18, 4).eq(expected));
     }
 
+    function test_pp_displaydecimals2() public {
+        string memory expected = "123,456,789";
+        uint256 target = 123456789987654321987654321;
+        assertTrue(pp(target, 18, 0).eq(expected));
+    }
+
     function test_pp_fixedwidth() public {
         string memory expected = "    123,456,789.9876";
         uint256 target = 123456789987654321987654321;
