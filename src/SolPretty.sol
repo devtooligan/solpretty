@@ -2,16 +2,22 @@
 pragma solidity ^0.8.21;
 
 /**
-                                  .       .                                  oooo
-                                .o8     .o8                                  `888
-oo.ooooo.  oooo d8b  .ooooo.  .o888oo .o888oo oooo    ooo  .oooo.o  .ooooo.   888
- 888' `88b `888""8P d88' `88b   888     888    `88.  .8'  d88(  "8 d88' `88b  888
- 888   888  888     888ooo888   888     888     `88..8'   `"Y88b.  888   888  888
- 888   888  888     888    .o   888 .   888 .    `888'    o.  )88b 888   888  888
- 888bod8P' d888b    `Y8bod8P'   "888"   "888"     .8'     8""888P' `Y8bod8P' o888o
- 888                                          .o..P'
-o888o                                         `Y8P'
 
+                        ,dPYb,                                   I8      I8
+                        IP'`Yb                                   I8      I8
+                        I8  8I                                8888888888888888
+                        I8  8'                                   I8      I8
+   ,g,       ,ggggg,    I8 dP  gg,gggg,     ,gggggg,   ,ggg,     I8      I8    gg     gg
+  ,8'8,     dP"  "Y8ggg I8dP   I8P"  "Yb    dP""""8I  i8" "8i    I8      I8    I8     8I
+ ,8'  Yb   i8'    ,8I   I8P    I8'    ,8i  ,8'    8I  I8, ,8I   ,I8,    ,I8,   I8,   ,8I
+,8'_   8) ,d8,   ,d8'  ,d8b,_ ,I8 _  ,d8' ,dP     Y8, `YbadP'  ,d88b,  ,d88b, ,d8b, ,d8I
+P' "YY8P8PP"Y8888P"    8P'"Y88PI8 YY88888P8P      `Y8888P"Y88888P""Y8888P""Y88P""Y88P"888
+                               I8                                                   ,d8I'
+                               I8                                                 ,dP'8I
+                               I8                                                ,8"  8I
+                               I8                                                I8   8I
+                               I8                                                `8, ,8I
+                               I8                                                 `Y8P"
 */
 
 import {console2 as console} from "forge-std/Test.sol";

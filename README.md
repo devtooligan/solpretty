@@ -16,7 +16,8 @@ forge install devtooligan/solpretty
 
 ### pp
  - pp(uint256 target, uint256 fixedDecimals)
- - pp(uint256 target, uint256 fixedDecimals, uint256 fixedWidth)
+ - pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals)
+ - pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
  - pp(uint256 target, memory SolPrettyOptions)
 
 ```solidity
@@ -80,12 +81,3 @@ pp(1234).log(); // console2.log("1,234")
 pp(1234).concat(" Alice's balance").log(); // console2.log("1,234 Alice's balance")
 
 ```
-
-
-## Acknowledgements
-
-This repository is inspired by or directly modified from many sources, primarily:
-
-- [TODO](https://somelink.com)
-
-[solidity-shield]: https://img.shields.io/badge/solidity-%3E=0.8.4%20%3C=0.8.21-aa6746
