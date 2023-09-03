@@ -28,6 +28,7 @@ contract SolPrettyTest is Test {
         uint256 target = 123456789987654321987654321;
         assertTrue(pp(target, 18, 4).eq(expected));
     }
+
     function test_pp_fixedwidth() public {
         string memory expected = "    123,456,789.9876";
         uint256 target = 123456789987654321987654321;

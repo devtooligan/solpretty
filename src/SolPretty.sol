@@ -31,12 +31,15 @@ function pp(uint256 target, uint256 fixedDecimals) pure returns (string memory) 
     return SolPretty.format(target, fixedDecimals);
 }
 
-function pp(uint256 target, uint256 fixedDecimals, uint displayDecimals) pure returns (string memory) {
-    return SolPretty.format(target, fixedDecimals,  displayDecimals);
+function pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
+    return SolPretty.format(target, fixedDecimals, displayDecimals);
 }
 
-function pp(uint256 target, uint256 fixedDecimals, uint displayDecimals, uint fixedWidth) pure returns (string memory) {
-    return SolPretty.format(target, fixedDecimals,  displayDecimals, fixedWidth);
+function pp(uint256 target, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+    pure
+    returns (string memory)
+{
+    return SolPretty.format(target, fixedDecimals, displayDecimals, fixedWidth);
 }
 
 function pp(uint256 target, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
@@ -98,6 +101,7 @@ library SolPretty {
     function log(string memory message) internal pure {
         console.log(message);
     }
+
     function log(string[] memory messages) internal pure {
         for (uint256 i = 0; i < messages.length; i++) {
             log(messages[i]);
@@ -107,6 +111,7 @@ library SolPretty {
     function concat(string memory a, string memory b) internal pure returns (string memory) {
         return a.concat(b);
     }
+
     function concat(string[] memory strings) internal pure returns (string memory result) {
         result = "";
         for (uint256 i = 0; i < strings.length; i++) {
@@ -134,24 +139,36 @@ library SolPretty {
     function format(uint256 target) internal pure returns (string memory) {
         return _formatDecimal(target, _getDefaultOpts());
     }
-    function format(uint256 target, uint fixedDecimals) internal pure returns (string memory) {
+
+    function format(uint256 target, uint256 fixedDecimals) internal pure returns (string memory) {
         SolPrettyOptions memory opts = _getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         return _formatDecimal(target, opts);
     }
-    function format(uint256 target, uint fixedDecimals, uint displayDecimals) internal pure returns (string memory) {
+
+    function format(uint256 target, uint256 fixedDecimals, uint256 displayDecimals)
+        internal
+        pure
+        returns (string memory)
+    {
         SolPrettyOptions memory opts = _getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
         return _formatDecimal(target, opts);
     }
-    function format(uint256 target, uint fixedDecimals, uint displayDecimals, uint fixedWidth) internal pure returns (string memory) {
+
+    function format(uint256 target, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+        internal
+        pure
+        returns (string memory)
+    {
         SolPrettyOptions memory opts = _getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
         opts.fixedWidth = fixedWidth;
         return _formatDecimal(target, opts);
     }
+
     function format(uint256 target, SolPrettyOptions memory opts) internal pure returns (string memory) {
         return _formatDecimal(target, opts);
     }
@@ -198,8 +215,8 @@ library SolPretty {
                 // length currently represents the total number of digits
                 // subtract the fixed precision number of digits
                 // and divide by the grouping size to get the number of delimiters to account for
-                uint fractionalDigits = adjustedDecimals;
-                uint moar = (adjustedDecimals / opts.fractionalGroupingSize);
+                uint256 fractionalDigits = adjustedDecimals;
+                uint256 moar = (adjustedDecimals / opts.fractionalGroupingSize);
                 if (fractionalDigits % opts.fractionalGroupingSize == 0) {
                     moar -= 1;
                 }
@@ -213,8 +230,8 @@ library SolPretty {
                 // length currently represents the total number of digits
                 // subtract the fixed precision number of digits
                 // and divide by the grouping size to get the number of delimiters to account for
-                uint integerDigits = totalDigits - adjustedDecimals;
-                uint moar = integerDigits / opts.integerGroupingSize;
+                uint256 integerDigits = totalDigits - adjustedDecimals;
+                uint256 moar = integerDigits / opts.integerGroupingSize;
                 if (integerDigits % opts.integerGroupingSize == 0) {
                     moar -= 1;
                 }
@@ -251,7 +268,7 @@ library SolPretty {
             uint256 counter = 0;
             while (counter < length) {
                 assembly {
-                  ptr := sub(ptr, 1)
+                    ptr := sub(ptr, 1)
                 }
                 if (value == 0) {
                     assembly {
@@ -265,7 +282,7 @@ library SolPretty {
                     // decimal delimiter
                     if (!isEmpty(opts.decimalDelimter)) {
                         assembly {
-                            mstore8(ptr, byte(0,decimalDelimiter))
+                            mstore8(ptr, byte(0, decimalDelimiter))
                             counter := add(counter, 1)
                         }
                     }
@@ -290,8 +307,7 @@ library SolPretty {
                 }
                 bool addIntegerDelimiter = usingIntegerGrouping(opts) && cursor > 0
                     && cursor % int256(opts.integerGroupingSize) == 0 && cursor != int256(totalDigits - adjustedDecimals); // don't add delimiter at end of Integer
-                if (addIntegerDelimiter) {
-                }
+                if (addIntegerDelimiter) {}
 
                 // write next digit
                 assembly {
@@ -309,7 +325,6 @@ library SolPretty {
                         counter := add(counter, 1)
                     }
                 }
-
             }
 
             return buffer;
