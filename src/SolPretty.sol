@@ -88,9 +88,20 @@ library SolPretty {
     function log(string memory message) internal pure {
         console.log(message);
     }
+    function log(string[] memory messages) internal pure {
+        for (uint256 i = 0; i < messages.length; i++) {
+            log(messages[i]);
+        }
+    }
 
     function concat(string memory a, string memory b) internal pure returns (string memory) {
         return a.concat(b);
+    }
+    function concat(string[] memory strings) internal pure returns (string memory result) {
+        result = "";
+        for (uint256 i = 0; i < strings.length; i++) {
+            result = result.concat(strings[i]);
+        }
     }
 
     function eq(string memory a, string memory b) internal pure returns (bool) {

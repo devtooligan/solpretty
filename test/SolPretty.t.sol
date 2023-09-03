@@ -143,6 +143,24 @@ contract SolPrettyTest is Test {
         pp(uint256(25750003), optsUSDC).concat(" Alice USDC final balance").log();
     }
 
+    function testConcatList() public {
+        string[] memory list = new string[](3);
+        list[0] = "a";
+        list[1] = "b";
+        list[2] = "c";
+        string memory expected = "abc";
+        string memory result = SolPretty.concat(list);
+        assertTrue(result.eq(expected));
+    }
+
+    function testLogList() public {
+        string[] memory list = new string[](3);
+        list[0] = "a";
+        list[1] = "b";
+        list[2] = "c";
+        SolPretty.log(list);
+    }
+
     function test_prettyPrint() public {
         string memory hi = "hi";
         assertTrue(hi.echo().eq("hi"));

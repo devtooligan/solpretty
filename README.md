@@ -1,7 +1,9 @@
 ## solpretty
 ![Solidity][solidity-shield]
 
-A library for pretty printing numbers in Solidity built on top of [Solady](https://github.com/Vectorized/solady)
+A library for pretty printing numbers in Solidity
+
+built on [Solady](https://github.com/Vectorized/solady)
 
 ## Installation
 To install with [**Foundry**](https://github.com/gakonst/foundry):
