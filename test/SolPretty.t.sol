@@ -28,6 +28,11 @@ contract SolPrettyTest is Test {
         uint256 target = 123456789987654321987654321;
         assertTrue(pp(target, 18, 4).eq(expected));
     }
+    function test_pp_fixedwidth() public {
+        string memory expected = "    123,456,789.9876";
+        uint256 target = 123456789987654321987654321;
+        assertTrue(pp(target, 18, 4, 20).eq(expected));
+    }
 
     function test_pp_opts1() public {
         uint256 target = 123456789987654321987654321;
@@ -90,8 +95,8 @@ contract SolPrettyTest is Test {
         console.logBytes(abi.encode(1));
         console.log(uint256(7332330000000000000));
         console.log(uint256(25650003));
-        console.log(uint256(25750003));
-        console.log(uint256(25750003));
+        console.log(uint256(25750004));
+        console.log(uint256(25750005));
         revert("sucker");
     }
 
@@ -139,8 +144,8 @@ contract SolPrettyTest is Test {
         pp(uint256(7000000000000000000), optsWETH).concat(" Bob's WETH balance before").log();
         pp(uint256(7332330000000000000), optsWETH).concat(" Bob's WETH balance after").log();
         pp(uint256(25650003), optsUSDC).concat(" Alice USDC final balance").log();
-        pp(uint256(25750003), optsUSDC).concat(" Alice USDC final balance").log();
-        pp(uint256(25750003), optsUSDC).concat(" Alice USDC final balance").log();
+        pp(uint256(25750004), optsUSDC).concat(" Alice USDC final balance").log();
+        pp(uint256(25750005), optsUSDC).concat(" Alice USDC final balance").log();
     }
 
     function testConcatList() public {

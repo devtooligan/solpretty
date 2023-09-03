@@ -22,9 +22,10 @@ forge install devtooligan/solpretty
 ```solidity
 import {pp} from "solpretty/src/SolPretty.sol";
 
-pp(123123123123) //        -> "123,123,123,123" // default
-pp(123123123123, 6) //     -> "123,123.123123"  // fixedDecimals = 6
-pp(123123123123, 6, 15) // -> " 123,123.123123" // fixedWidth = 15
+pp(123123123123) //           -> "123,123,123,123" // default
+pp(123123123123, 6) //        -> "123,123.123123"  // fixedDecimals = 6
+pp(123123123123, 6, 2) //     -> "123,123.12"      // displayDecimals = 2
+pp(123123123123, 6, 0, 15) // -> " 123,123.123123" // fixedWidth = 15
 ```
 
 Customizeable options:

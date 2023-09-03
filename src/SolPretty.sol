@@ -29,6 +29,10 @@ function pp(uint256 target, uint256 fixedDecimals, uint displayDecimals) pure re
     return SolPretty.format(target, fixedDecimals,  displayDecimals);
 }
 
+function pp(uint256 target, uint256 fixedDecimals, uint displayDecimals, uint fixedWidth) pure returns (string memory) {
+    return SolPretty.format(target, fixedDecimals,  displayDecimals, fixedWidth);
+}
+
 function pp(uint256 target, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
     return SolPretty.format(target, opts);
 }
@@ -133,6 +137,13 @@ library SolPretty {
         SolPrettyOptions memory opts = _getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
+        return _formatDecimal(target, opts);
+    }
+    function format(uint256 target, uint fixedDecimals, uint displayDecimals, uint fixedWidth) internal pure returns (string memory) {
+        SolPrettyOptions memory opts = _getDefaultOpts();
+        opts.fixedDecimals = fixedDecimals;
+        opts.displayDecimals = displayDecimals;
+        opts.fixedWidth = fixedWidth;
         return _formatDecimal(target, opts);
     }
     function format(uint256 target, SolPrettyOptions memory opts) internal pure returns (string memory) {
