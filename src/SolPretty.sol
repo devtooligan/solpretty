@@ -22,7 +22,7 @@ P' "YY8P8PP"Y8888P"    8P'"Y88PI8 YY88888P8P      `Y8888P"Y88888P""Y8888P""Y88P"
 
 import {console2 as console} from "forge-std/Test.sol";
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
-
+import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 function pp(uint256 target) pure returns (string memory) {
     return SolPretty.format(target);
 }
@@ -61,37 +61,6 @@ library SolPretty {
         bytes1 integerDelimiter; //        default bytes(",")
         uint256 integerGroupingSize; //    default 3
         uint256 fixedWidth; //             default 0 (automatic)
-    }
-
-    function log10(uint256 value) internal pure returns (uint256 result) {
-        assembly {
-            result := 0
-            if gt(value, exp(10, 64)) {
-                value := div(value, exp(10, 64))
-                result := add(result, 64)
-            }
-            if gt(value, exp(10, 32)) {
-                value := div(value, exp(10, 32))
-                result := add(result, 32)
-            }
-            if gt(value, exp(10, 16)) {
-                value := div(value, exp(10, 16))
-                result := add(result, 16)
-            }
-            if gt(value, exp(10, 8)) {
-                value := div(value, exp(10, 8))
-                result := add(result, 8)
-            }
-            if gt(value, exp(10, 4)) {
-                value := div(value, exp(10, 4))
-                result := add(result, 4)
-            }
-            if gt(value, exp(10, 2)) {
-                value := div(value, exp(10, 2))
-                result := add(result, 2)
-            }
-            if gt(value, exp(10, 1)) { result := add(result, 1) }
-        }
     }
 
     function echo(string memory _sol) internal pure returns (string memory) {
@@ -191,6 +160,7 @@ library SolPretty {
     }
 
     function usingDisplayDecimals(SolPrettyOptions memory opts) internal pure returns (bool) {
+
         return opts.displayDecimals < opts.fixedDecimals;
     }
 
@@ -205,8 +175,7 @@ library SolPretty {
                 value /= 10 ** diff;
                 adjustedDecimals = opts.displayDecimals;
             }
-
-            uint256 totalDigits = log10(value) + 1;
+            uint256 totalDigits = Math.log10(value) + 1;
             uint256 length = totalDigits;
 
             // adjust for fractional grouping delimiters
@@ -216,7 +185,7 @@ library SolPretty {
                 // subtract the fixed precision number of digits
                 // and divide by the grouping size to get the number of delimiters to account for
                 uint256 fractionalDigits = adjustedDecimals;
-                uint256 moar = (adjustedDecimals / opts.fractionalGroupingSize);
+                uint256 moar = (fractionalDigits / opts.fractionalGroupingSize);
                 if (fractionalDigits % opts.fractionalGroupingSize == 0) {
                     moar -= 1;
                 }
@@ -235,6 +204,7 @@ library SolPretty {
                 if (integerDigits % opts.integerGroupingSize == 0) {
                     moar -= 1;
                 }
+
                 length += moar;
                 integerDelimiter = opts.integerDelimiter;
             }

@@ -11,6 +11,14 @@ contract SolPrettyTest is Test {
 
     function setUp() public {}
 
+    function test_geeb() public {
+        uint target = 1000.5e18;
+        string memory expected = "1,000.50";
+        string memory result = pp(target, 18, 2);
+        assertTrue(result.eq(expected));
+
+    }
+
     function test_pp_default() public {
         string memory expected = "123,456,789";
         uint256 target = 123456789;
