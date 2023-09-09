@@ -58,8 +58,8 @@ library SolPretty {
         uint256 displayDecimals; //        default type(uint256).max
         bytes1 decimalDelimter; //         default "."
         bytes1 fractionalDelimiter; //     default " "
-        uint256 fractionalGroupingSize; // default 0
         bytes1 integerDelimiter; //        default ","
+        uint256 fractionalGroupingSize; // default 0
         uint256 integerGroupingSize; //    default 3
         uint256 fixedWidth; //             default 0 (automatic)
     }
@@ -73,7 +73,7 @@ library SolPretty {
     }
 
     function log(string[] memory messages) internal pure {
-        for (uint256 i = 0; i < messages.length; i++) {
+        for (uint256 i; i < messages.length; ++i) {
             log(messages[i]);
         }
     }
@@ -84,7 +84,7 @@ library SolPretty {
 
     function concat(string[] memory strings) internal pure returns (string memory result) {
         result = "";
-        for (uint256 i = 0; i < strings.length; i++) {
+        for (uint256 i; i < strings.length; ++i) {
             result = result.concat(strings[i]);
         }
     }
@@ -229,7 +229,7 @@ library SolPretty {
             // zero represents the decimal delimiter position
             // for example FP6 12345678 starts at cursor -6 and ends at cursor 2
             int256 cursor = adjustedDecimals > 0 ? (-1 * int256(adjustedDecimals)) : int256(1);
-            uint256 counter = 0;
+            uint256 counter;
             while (counter < length) {
                 assembly {
                     ptr := sub(ptr, 1)
