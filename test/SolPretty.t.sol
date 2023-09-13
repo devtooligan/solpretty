@@ -15,38 +15,60 @@ contract SolPrettyTest is Test {
         uint target = 1000.5e18;
         string memory expected = "1,000.50";
         string memory result = pp(target, 18, 2);
-        assertTrue(result.eq(expected));
+        assertTrue(result.log().eq(expected));
 
+    }
+
+    function test_benaadams() public {
+        uint target = 0;
+        string memory expected = "0.00";
+        string memory result = pp(target, 18, 2);
+        assertTrue(result.log().eq(expected));
+
+        SolPretty.SolPrettyOptions memory opts = SolPretty.SolPrettyOptions({
+            fixedDecimals: 18,
+            displayDecimals: 5, // if this is less than fixedDecimals, value will be truncated
+            decimalDelimter: ".",
+            fractionalDelimiter: " ",
+            fractionalGroupingSize: 3,
+            integerDelimiter: ",",
+            integerGroupingSize: 1,
+            fixedWidth: 0
+        });
+        target = uint(0.000001 ether);
+        result = pp(target, opts);
+        expected = "0.000 00";
+        assertTrue(result.log().eq(expected));
     }
 
     function test_pp_default() public {
         string memory expected = "123,456,789";
         uint256 target = 123456789;
-        assertTrue(pp(target).eq(expected));
+        assertTrue(pp(target).log().eq(expected));
     }
 
     function test_pp_fp() public {
         string memory expected = "123,456,789.987654321987654321";
         uint256 target = 123456789987654321987654321;
-        assertTrue(pp(target, 18).eq(expected));
+        assertTrue(pp(target, 18).log().eq(expected));
     }
 
     function test_pp_displaydecimals() public {
         string memory expected = "123,456,789.9876";
         uint256 target = 123456789987654321987654321;
-        assertTrue(pp(target, 18, 4).eq(expected));
+        assertTrue(pp(target, 18, 4).log().eq(expected));
     }
 
     function test_pp_displaydecimals2() public {
         string memory expected = "123,456,789";
         uint256 target = 123456789987654321987654321;
-        assertTrue(pp(target, 18, 0).eq(expected));
+        assertTrue(pp(target, 18, 0).log().eq(expected));
     }
 
     function test_pp_fixedwidth() public {
         string memory expected = "    123,456,789.9876";
         uint256 target = 123456789987654321987654321;
-        assertTrue(pp(target, 18, 4, 20).eq(expected));
+        assertTrue(pp(target, 18, 4, 20).log().eq(expected));
     }
 
     function test_pp_opts1() public {
@@ -62,8 +84,7 @@ contract SolPrettyTest is Test {
             integerGroupingSize: 1,
             fixedWidth: 0
         });
-        string memory result = pp(target, opts);
-        assertTrue(result.eq(expected));
+        assertTrue(pp(target, opts).log().eq(expected));
     }
 
     function test_pp_opts2() public {
@@ -79,8 +100,7 @@ contract SolPrettyTest is Test {
             integerGroupingSize: 3,
             fixedWidth: 0
         });
-        string memory result = pp(target, opts);
-        assertTrue(result.eq(expected));
+        assertTrue(pp(target, opts).log().eq(expected));
     }
 
     function test_pp_opts3() public {
@@ -96,8 +116,7 @@ contract SolPrettyTest is Test {
             integerGroupingSize: 3,
             fixedWidth: 0
         });
-        string memory result = pp(target, opts);
-        assertTrue(result.eq(expected));
+        assertTrue(pp(target, opts).log().eq(expected));
     }
 
     function testWithoutSolPretty() public {
@@ -126,7 +145,7 @@ contract SolPrettyTest is Test {
             integerGroupingSize: 3,
             fixedWidth: 20
         });
-        string memory result = pp(1500000000000000000, optsWETH);
+        string memory result = pp(1500000000000000000, optsWETH).log();
         assertTrue(result.eq("              1.5000"));
     }
 

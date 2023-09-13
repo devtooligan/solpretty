@@ -2,27 +2,26 @@
 pragma solidity ^0.8.21;
 
 /**
+ * ,dPYb,                                   I8      I8
+ *                         IP'`Yb                                   I8      I8
+ *                         I8  8I                                8888888888888888
+ *                         I8  8'                                   I8      I8
+ *    ,g,       ,ggggg,    I8 dP  gg,gggg,     ,gggggg,   ,ggg,     I8      I8    gg     gg
+ *   ,8'8,     dP"  "Y8ggg I8dP   I8P"  "Yb    dP""""8I  i8" "8i    I8      I8    I8     8I
+ *  ,8'  Yb   i8'    ,8I   I8P    I8'    ,8i  ,8'    8I  I8, ,8I   ,I8,    ,I8,   I8,   ,8I
+ * ,8'_   8) ,d8,   ,d8'  ,d8b,_ ,I8 _  ,d8' ,dP     Y8, `YbadP'  ,d88b,  ,d88b, ,d8b, ,d8I
+ * P' "YY8P8PP"Y8888P"    8P'"Y88PI8 YY88888P8P      `Y8888P"Y88888P""Y8888P""Y88P""Y88P"888
+ *                                I8                                                   ,d8I'
+ *                                I8                                                 ,dP'8I
+ *                                I8                                                ,8"  8I
+ *                                I8                                                I8   8I
+ *                                I8                                                `8, ,8I
+ *                                I8                                                 `Y8P"
+ */
 
-                        ,dPYb,                                   I8      I8
-                        IP'`Yb                                   I8      I8
-                        I8  8I                                8888888888888888
-                        I8  8'                                   I8      I8
-   ,g,       ,ggggg,    I8 dP  gg,gggg,     ,gggggg,   ,ggg,     I8      I8    gg     gg
-  ,8'8,     dP"  "Y8ggg I8dP   I8P"  "Yb    dP""""8I  i8" "8i    I8      I8    I8     8I
- ,8'  Yb   i8'    ,8I   I8P    I8'    ,8i  ,8'    8I  I8, ,8I   ,I8,    ,I8,   I8,   ,8I
-,8'_   8) ,d8,   ,d8'  ,d8b,_ ,I8 _  ,d8' ,dP     Y8, `YbadP'  ,d88b,  ,d88b, ,d8b, ,d8I
-P' "YY8P8PP"Y8888P"    8P'"Y88PI8 YY88888P8P      `Y8888P"Y88888P""Y8888P""Y88P""Y88P"888
-                               I8                                                   ,d8I'
-                               I8                                                 ,dP'8I
-                               I8                                                ,8"  8I
-                               I8                                                I8   8I
-                               I8                                                `8, ,8I
-                               I8                                                 `Y8P"
-*/
-
-import {console2 as console} from "forge-std/Test.sol";
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
-import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
+import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
+import {console2 as console} from 'forge-std/Test.sol';
 
 function pp(uint256 value) pure returns (string memory) {
     return SolPretty.format(value);
@@ -56,20 +55,22 @@ library SolPretty {
     struct SolPrettyOptions {
         uint256 fixedDecimals; //          default 0
         uint256 displayDecimals; //        default type(uint256).max
-        bytes1 decimalDelimter; //         default "."
         bytes1 fractionalDelimiter; //     default " "
         uint256 fractionalGroupingSize; // default 0
         bytes1 integerDelimiter; //        default ","
         uint256 integerGroupingSize; //    default 3
         uint256 fixedWidth; //             default 0 (automatic)
+        bytes1 decimalDelimter; //         default "." // "." in U.S. and "," in Europe
     }
 
-    function echo(string memory _sol) internal pure returns (string memory) {
-        return _sol;
+    function echo(string memory sol) internal pure returns (string memory) {
+        return sol;
     }
 
-    function log(string memory message) internal pure {
+    /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
+    function log(string memory message) internal pure returns(string memory) {
         console.log(message);
+        return message;
     }
 
     function log(string[] memory messages) internal pure {
@@ -97,12 +98,12 @@ library SolPretty {
         opts = SolPrettyOptions({
             fixedDecimals: 0, // defaults to zero decimal places
             displayDecimals: type(uint256).max, // if this is less than fixedDecimals, value will be truncated
-            decimalDelimter: ".",
             fractionalDelimiter: " ",
             fractionalGroupingSize: 0, // fractional (right side of decimal) grouping disabled by default
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 0 // automatic
+            fixedWidth: 0, // automatic
+            decimalDelimter: "." // "." in U.S. and "," in Europe
         });
     }
 
@@ -161,7 +162,6 @@ library SolPretty {
     }
 
     function usingDisplayDecimals(SolPrettyOptions memory opts) internal pure returns (bool) {
-
         return opts.displayDecimals < opts.fixedDecimals;
     }
 
@@ -176,9 +176,16 @@ library SolPretty {
                 value /= 10 ** diff;
                 adjustedDecimals = opts.displayDecimals;
             }
-            uint256 totalDigits = Math.log10(value) + 1;
+            uint256 totalDigits;
+            if (Math.log10(value) == 0) {
+                totalDigits = adjustedDecimals + 1;
+                /**
+                 * for zero e.g. 000010 fp6. display2 -> 0.00
+                 */
+            } else {
+                totalDigits = Math.log10(value) + 1;
+            }
             uint256 length = totalDigits;
-
             // adjust for fractional grouping delimiters
             bytes1 fractionalDelimiter;
             if (usingFractionalGrouping(opts)) {
@@ -202,14 +209,12 @@ library SolPretty {
                 length += moar;
                 integerDelimiter = opts.integerDelimiter;
             }
-
             // add one for decimal delimiter
             bytes1 decimalDelimiter;
             if (adjustedDecimals > 0 && !isEmpty(opts.decimalDelimter)) {
                 length += 1;
                 decimalDelimiter = opts.decimalDelimter;
             }
-
             // adjust for fixed width. reverts on too short
             if (opts.fixedWidth > 0) {
                 require(opts.fixedWidth >= length, "SolPretty: too short"); // twss
@@ -234,7 +239,7 @@ library SolPretty {
                 assembly {
                     ptr := sub(ptr, 1)
                 }
-                if (value == 0) {
+                if (value == 0 && cursor > 1) {
                     // writing whitespace for long fixed width
                     assembly {
                         mstore8(ptr, byte(0, SPACE))
@@ -275,8 +280,16 @@ library SolPretty {
                 if (addIntegerDelimiter) {}
 
                 // write next digit
+                if (value == 0) {
+                    assembly {
+                        mstore8(ptr, byte(0, SYMBOLS))
+                    }
+                } else {
+                    assembly {
+                        mstore8(ptr, byte(mod(value, 10), SYMBOLS))
+                    }
+                }
                 assembly {
-                    mstore8(ptr, byte(mod(value, 10), SYMBOLS))
                     value := div(value, 10)
                     cursor := add(cursor, 1)
                     counter := add(counter, 1)
