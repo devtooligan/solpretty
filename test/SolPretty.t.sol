@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.21;
+pragma solidity ^0.8.19;
 
 import {Test, console2 as console} from "forge-std/Test.sol";
 import {LibString as Solady} from "solady/src/utils/LibString.sol";
