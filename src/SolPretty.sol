@@ -47,7 +47,7 @@ library SolPretty {
     }
 
     // DEFAULT OPTIONS ********************************************************
-    function _getDefaultOpts() internal pure returns (SolPrettyOptions memory opts) {
+    function getDefaultOpts() internal pure returns (SolPrettyOptions memory opts) {
         opts = SolPrettyOptions({
             fixedDecimals: 0, // defaults to zero decimal places
             displayDecimals: type(uint256).max, // if this is less than fixedDecimals, value will be truncated
@@ -63,11 +63,11 @@ library SolPretty {
     // FORMAT core function variants*******************************************
 
     function format(uint256 value) internal pure returns (string memory) {
-        return _formatDecimal(value, _getDefaultOpts());
+        return _formatDecimal(value, getDefaultOpts());
     }
 
     function format(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
-        SolPrettyOptions memory opts = _getDefaultOpts();
+        SolPrettyOptions memory opts = getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         return _formatDecimal(value, opts);
     }
@@ -77,7 +77,7 @@ library SolPretty {
         pure
         returns (string memory)
     {
-        SolPrettyOptions memory opts = _getDefaultOpts();
+        SolPrettyOptions memory opts = getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
         return _formatDecimal(value, opts);
@@ -88,7 +88,7 @@ library SolPretty {
         pure
         returns (string memory)
     {
-        SolPrettyOptions memory opts = _getDefaultOpts();
+        SolPrettyOptions memory opts = getDefaultOpts();
         opts.fixedDecimals = fixedDecimals;
         opts.displayDecimals = displayDecimals;
         opts.fixedWidth = fixedWidth;
@@ -332,6 +332,7 @@ function border() pure {
     ppl();
 }
 
+
 // so you don't have to type console.log
 function ppl() pure returns (string memory) {
     return ppl("");
@@ -402,17 +403,66 @@ function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint
     pure
     returns (string memory)
 {
-    return value.format(fixedDecimals, displayDecimals, fixedWidth).log();
+    return pp(value, fixedDecimals, displayDecimals, fixedWidth).log();
 }
 
 function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory message)
     pure
     returns (string memory)
 {
-    return value.format(fixedDecimals, displayDecimals, fixedWidth).log(message);
+    return pp(value, fixedDecimals, displayDecimals, fixedWidth).log(message);
 }
 
 // VALUE AND OPTIONS
 function pp(uint256 value, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
     return value.format(opts);
 }
+
+// VALUE AND NO FORMATTING AT ALL
+// pass false as second parameter to clear ALL formatting
+function ppl(uint256 value, bool useFormatting) pure returns (string memory) {
+    if (useFormatting) {
+        return pp(value).log();
+    } else {
+        SolPretty.SolPrettyOptions memory opts = SolPretty.getDefaultOpts();
+        opts.integerDelimiter = "";
+        opts.integerGroupingSize = 0;
+        return pp(value, opts).log();
+    }
+}
+
+function ppl(uint256 value, bool useFormatting, string memory message) pure returns (string memory) {
+    if (useFormatting) {
+        return pp(value).log(message);
+    } else {
+        SolPretty.SolPrettyOptions memory opts = SolPretty.getDefaultOpts();
+        opts.integerDelimiter = "";
+        opts.integerGroupingSize = 0;
+        return pp(value, opts).log(message);
+    }
+}
+
+function ppl(uint256 value, bool useFormatting, uint256 fixedWidth) pure returns (string memory) {
+    if (useFormatting) {
+        return pp(value, 18, 2, fixedWidth).log();
+    } else {
+        SolPretty.SolPrettyOptions memory opts = SolPretty.getDefaultOpts();
+        opts.integerDelimiter = "";
+        opts.integerGroupingSize = 0;
+        opts.fixedWidth = fixedWidth;
+        return pp(value, opts).log();
+    }
+}
+
+function ppl(uint256 value, bool useFormatting, uint256 fixedWidth, string memory message) pure returns (string memory) {
+    if (useFormatting) {
+        return pp(value, 18, 2, fixedWidth).log(message);
+    } else {
+        SolPretty.SolPrettyOptions memory opts = SolPretty.getDefaultOpts();
+        opts.integerDelimiter = "";
+        opts.integerGroupingSize = 0;
+        opts.fixedWidth = fixedWidth;
+        return pp(value, opts).log(message);
+    }
+}
+
