@@ -326,7 +326,7 @@ library SolPretty {
 // Convenience Functions -- these are outside of the library
 
 // so you don't have to type console.log
-function clog(string memory message) pure returns (string memory) {
+function ppl(string memory message) pure returns (string memory) {
     return message.log();
 }
 
