@@ -27,7 +27,7 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-import {console2} from "forge-std/Test.sol";
+import {console2 as console} from "forge-std/Test.sol";
 
 /// @notice A library for formatting anumeric values as strings
 /// @dev NOTE: CONVENIENCE FUNCTIONS BELOW
@@ -271,14 +271,14 @@ library SolPretty {
 
     /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
     function log(string memory message) internal pure returns (string memory) {
-        console2.log(message);
+        console.log(message);
         return message;
     }
 
     /// @dev by default adds a space between message and append
     function log(string memory message, string memory append) internal pure returns (string memory) {
         message = message.concat(" ").concat(append);
-        console2.log(message);
+        console.log(message);
         return message;
     }
 
@@ -289,7 +289,7 @@ library SolPretty {
         } else {
             message = message.concat(append);
         }
-        console2.log(message);
+        console.log(message);
         return message;
     }
 
@@ -325,7 +325,8 @@ library SolPretty {
 
 // Convenience Functions -- these are outside of the library
 
-function log(string memory message) pure returns (string memory) {
+// so you don't have to type console.log
+function clog(string memory message) pure returns (string memory) {
     return message.log();
 }
 
