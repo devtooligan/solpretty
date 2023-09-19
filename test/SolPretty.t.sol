@@ -3,11 +3,10 @@ pragma solidity ^0.8.19;
 
 import {Test, console2 as console} from "forge-std/Test.sol";
 import {LibString as Solady} from "solady/src/utils/LibString.sol";
-import {pp, SolPretty} from "../src/SolPretty.sol";
-
+import "../src/SolPretty.sol";
+using SolPretty for uint256;
+using SolPretty for string;
 contract SolPrettyTest is Test {
-    using SolPretty for string;
-    using SolPretty for uint256;
 
     function setUp() public {}
 
@@ -23,7 +22,8 @@ contract SolPrettyTest is Test {
         uint target = 0;
         string memory expected = "0.00";
         string memory result = pp(target, 18, 2);
-        assertTrue(result.log().eq(expected));
+        require(result.log().eq(expected));
+        // assertTrue(result.log().eq(expected));
 
         SolPretty.SolPrettyOptions memory opts = SolPretty.SolPrettyOptions({
             fixedDecimals: 18,

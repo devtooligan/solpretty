@@ -17,74 +17,20 @@ pragma solidity ^0.8.19;
  *                                I8                                                I8   8I
  *                                I8                                                `8, ,8I
  *                                I8                                                 `Y8P"
+ *
  */
+
+using SolPretty for uint256;
+using SolPretty for string;
+import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {console2} from 'forge-std/Test.sol';
-using SolPretty for uint256;
-using SolPretty for string;
 
-/** VALUE ONLY */
-
-// pp
-function pp(uint256 value) pure returns (string memory) {
-    return value.format();
-}
-
-// pp and log
-function ppl(uint256 value) pure returns (string memory) {
-    return pp(value).log();
-}
-
-// pp and log with message
-function ppl(uint256 value, string memory message) pure returns (string memory) {
-    return pp(value).log(message);
-}
-
-/** VALUE AND FIXEDDECIMALS ONLY */
-function pp(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
-    return pp(value, fixedDecimals);
-}
-
-function ppl(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
-    return pp(value, fixedDecimals);
-}
-
-function ppl(uint256 value, uint256 fixedDecimals, string memory message) pure returns (string memory) {
-    return pp(value, fixedDecimals).log(message);
-}
-
-/** VALUE, FIXED DECIMALS, DISPLAYDECIMALS */
-
-function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
-    return value.format(fixedDecimals, displayDecimals);
-}
-
-function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
-    return value.format(fixedDecimals, displayDecimals).log();
-}
-
-function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory message) pure returns (string memory) {
-    return value.format(fixedDecimals, displayDecimals).log(message);
-}
-
-/** VALUE, FIXED DECIMALS, DISPLAYDECIMALS, FIXEDWIDTH */
-
-function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
-    pure
-    returns (string memory)
-{
-    return value.format(fixedDecimals, displayDecimals, fixedWidth);
-}
-
-function pp(uint256 value, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
-    return value.format(opts);
-}
-
+/// @notice A library for formatting anumeric values as strings
+/// @dev NOTE: CONVENIENCE FUNCTIONS BELOW
 library SolPretty {
-    using SoladyStrings for string;
-
     bytes16 private constant SYMBOLS = "0123456789abcdef";
     bytes1 private constant SPACE = " ";
 
@@ -99,55 +45,7 @@ library SolPretty {
         bytes1 decimalDelimter; //         default "." // ex. "." in U.S. and "," in Europe
     }
 
-    function echo(string memory sol) internal pure returns (string memory) {
-        return sol;
-    }
-
-    /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
-    function log(string memory message) internal pure returns(string memory) {
-        console2.log(message);
-        return message;
-    }
-
-    /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
-    function log(string memory message, string memory append, bool addSpace) internal pure returns(string memory) {
-        if (addSpace) {
-            message = message.concat(" " ).concat(append);
-        } else {
-            message = message.concat(append);
-        }
-        console2.log(message);
-        return message;
-    }
-
-    /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
-    function log(string memory message, string memory append) internal pure returns(string memory) {
-        message = message.concat(" " ).concat(append);
-        console2.log(message);
-        return message;
-    }
-
-    function log(string[] memory messages) internal pure {
-        for (uint256 i = 0; i < messages.length; i++) {
-            log(messages[i]);
-        }
-    }
-
-    function concat(string memory a, string memory b) internal pure returns (string memory) {
-        return a.concat(b);
-    }
-
-    function concat(string[] memory strings) internal pure returns (string memory result) {
-        result = "";
-        for (uint256 i = 0; i < strings.length; i++) {
-            result = result.concat(strings[i]);
-        }
-    }
-
-    function eq(string memory a, string memory b) internal pure returns (bool) {
-        return a.eq(b);
-    }
-
+    // DEFAULT OPTIONS ********************************************************
     function _getDefaultOpts() internal pure returns (SolPrettyOptions memory opts) {
         opts = SolPrettyOptions({
             fixedDecimals: 0, // defaults to zero decimal places
@@ -160,6 +58,8 @@ library SolPretty {
             decimalDelimter: "." // "." in U.S. and "," in Europe
         });
     }
+
+    // FORMAT core function variants*******************************************
 
     function format(uint256 value) internal pure returns (string memory) {
         return _formatDecimal(value, _getDefaultOpts());
@@ -198,6 +98,9 @@ library SolPretty {
         return _formatDecimal(value, opts);
     }
 
+
+    // FORMAT formatDecimals engine and related fns****************************
+
     function isEmpty(bytes1 x) internal pure returns (bool empty) {
         assembly {
             empty := iszero(x)
@@ -219,10 +122,11 @@ library SolPretty {
         return opts.displayDecimals < opts.fixedDecimals;
     }
 
+    // TODO: Inconsistent use of unchecked/assembly. This fn could use a refactor, although I'm not
+    // totally against having one long explicit function for this type of complexity.
     function _formatDecimal(uint256 value, SolPrettyOptions memory opts) internal pure returns (string memory) {
-        // determine the length of the string
-
         unchecked {
+            // determine the length of the string
             uint256 adjustedDecimals = opts.fixedDecimals;
             // adjust for display decimals -- truncates (rounds down)
             if (usingDisplayDecimals(opts)) {
@@ -362,4 +266,122 @@ library SolPretty {
             return buffer;
         }
     }
+
+
+    // LOG ********************************************************************
+
+    /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
+    function log(string memory message) internal pure returns(string memory) {
+        console2.log(message);
+        return message;
+    }
+
+
+    /// @dev by default adds a space between message and append
+    function log(string memory message, string memory append) internal pure returns(string memory) {
+        message = message.concat(" " ).concat(append);
+        console2.log(message);
+        return message;
+    }
+
+
+    /// @dev optional addSpace bool for adding/ommitting space between message and append
+    function log(string memory message, string memory append, bool addSpace) internal pure returns(string memory) {
+        if (addSpace) {
+            message = message.concat(" " ).concat(append);
+        } else {
+            message = message.concat(append);
+        }
+        console2.log(message);
+        return message;
+    }
+
+    /// @dev log an array of strings
+    function log(string[] memory messages) internal pure {
+        for (uint256 i = 0; i < messages.length; i++) {
+            log(messages[i]);
+        }
+    }
+
+    // UTILITIES **************************************************************
+
+    /// @dev wrapper around solady concat
+    function concat(string memory a, string memory b) internal pure returns (string memory) {
+        return SoladyStrings.concat(a, b);
+    }
+
+    function concat(string[] memory strings) internal pure returns (string memory result) {
+        result = "";
+        for (uint256 i = 0; i < strings.length; i++) {
+            result = SoladyStrings.concat(result, strings[i]);
+        }
+    }
+
+    function echo(string memory sol) internal pure returns (string memory result) {
+        return sol;
+    }
+
+    function eq(string memory a, string memory b) internal pure returns (bool) {
+        return SoladyStrings.eq(a,b);
+    }
+}
+
+
+// Convenience Functions -- these are outside of the library
+
+// VALUE only
+
+// pp
+function pp(uint256 value) pure returns (string memory) {
+    return value.format();
+}
+
+// pp and log
+function ppl(uint256 value) pure returns (string memory) {
+    return pp(value).log();
+}
+
+// pp and log with message
+function ppl(uint256 value, string memory message) pure returns (string memory) {
+    return pp(value).log(message);
+}
+
+// VALUE AND FIXEDDECIMALS ONLY
+function pp(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
+    return value.format(fixedDecimals);
+}
+
+function ppl(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
+    return pp(value, fixedDecimals).log();
+}
+
+function ppl(uint256 value, uint256 fixedDecimals, string memory message) pure returns (string memory) {
+    return pp(value, fixedDecimals).log(message);
+}
+
+// VALUE, FIXED DECIMALS, DISPLAYDECIMALS
+
+function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
+    return value.format(fixedDecimals, displayDecimals);
+}
+
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
+    return value.format(fixedDecimals, displayDecimals).log();
+}
+
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory message) pure returns (string memory) {
+    return value.format(fixedDecimals, displayDecimals).log(message);
+}
+
+// VALUE, FIXED DECIMALS, DISPLAYDECIMALS, FIXEDWIDTH
+
+function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+    pure
+    returns (string memory)
+{
+    return value.format(fixedDecimals, displayDecimals, fixedWidth);
+}
+
+function pp(uint256 value, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
+    return value.format(opts);
 }
