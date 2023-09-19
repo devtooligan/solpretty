@@ -325,6 +325,10 @@ library SolPretty {
 
 // Convenience Functions -- these are outside of the library
 
+function log(string memory message) pure returns (string memory) {
+    return message.log();
+}
+
 // VALUE only
 
 // pp
