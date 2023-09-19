@@ -11,6 +11,34 @@ using SolPretty for string;
 contract SolPrettyTest is Test {
     function setUp() public {}
 
+    function test_fractional1() public {
+        uint256 target = 0.95e18;
+        string memory expected = "0.9500";
+        string memory result = pp(target, 18, 4);
+        assertTrue(result.log().eq(expected));
+    }
+
+    function test_fractional2() public {
+        uint256 target = 0.0000095e18;
+        string memory expected = "0.0000";
+        string memory result = pp(target, 18, 4);
+        assertTrue(result.log().eq(expected));
+    }
+
+    function test_fractional3() public {
+        uint256 target = 9.5e18;
+        string memory expected = "9.5000";
+        string memory result = pp(target, 18, 4);
+        assertTrue(result.log().eq(expected));
+    }
+
+    function test_fractional4() public {
+        uint256 target = 0.0095e18;
+        string memory expected = "0.009";
+        string memory result = pp(target, 18, 3);
+        assertTrue(result.log().eq(expected));
+    }
+
     function test_geeb() public {
         uint256 target = 1000.5e18;
         string memory expected = "1,000.50";

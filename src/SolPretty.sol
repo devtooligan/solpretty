@@ -27,7 +27,7 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-import {console2 as console} from "forge-std/Test.sol";
+import {console2} from "forge-std/Test.sol";
 
 /// @notice A library for formatting anumeric values as strings
 /// @dev NOTE: CONVENIENCE FUNCTIONS BELOW
@@ -135,13 +135,14 @@ library SolPretty {
                 adjustedDecimals = opts.displayDecimals;
             }
             uint256 totalDigits;
-            if (Math.log10(value) == 0) {
+            {
+            uint integerValue = value / 10 ** adjustedDecimals;
+            if (Math.log10(integerValue) == 0) {
+                // for zero e.g. 000010 fp6. display2 -> 0.00
                 totalDigits = adjustedDecimals + 1;
-                /**
-                 * for zero e.g. 000010 fp6. display2 -> 0.00
-                 */
             } else {
                 totalDigits = Math.log10(value) + 1;
+            }
             }
             uint256 length = totalDigits;
             // adjust for fractional grouping delimiters
@@ -160,6 +161,7 @@ library SolPretty {
             bytes1 integerDelimiter;
             if (usingIntegerGrouping(opts)) {
                 uint256 integerDigits = totalDigits - adjustedDecimals;
+                integerDigits = integerDigits > 0 ? integerDigits : 1;
                 uint256 moar = integerDigits / opts.integerGroupingSize;
                 if (integerDigits % opts.integerGroupingSize == 0) {
                     moar -= 1;
@@ -235,7 +237,6 @@ library SolPretty {
                 }
                 bool addIntegerDelimiter = usingIntegerGrouping(opts) && cursor > 0
                     && cursor % int256(opts.integerGroupingSize) == 0 && cursor != int256(totalDigits - adjustedDecimals); // don't add delimiter at end of Integer
-                if (addIntegerDelimiter) {}
 
                 // write next digit
                 if (value == 0) {
@@ -271,14 +272,14 @@ library SolPretty {
 
     /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
     function log(string memory message) internal pure returns (string memory) {
-        console.log(message);
+        console2.log(message);
         return message;
     }
 
     /// @dev by default adds a space between message and append
     function log(string memory message, string memory append) internal pure returns (string memory) {
         message = message.concat(" ").concat(append);
-        console.log(message);
+        console2.log(message);
         return message;
     }
 
@@ -289,7 +290,7 @@ library SolPretty {
         } else {
             message = message.concat(append);
         }
-        console.log(message);
+        console2.log(message);
         return message;
     }
 
@@ -324,6 +325,17 @@ library SolPretty {
 }
 
 // Convenience Functions -- these are outside of the library
+
+function border() pure {
+    ppl();
+    ppl("-------------------------------------------------------------------------------");
+    ppl();
+}
+
+// so you don't have to type console.log
+function ppl() pure returns (string memory) {
+    return ppl("");
+}
 
 // so you don't have to type console.log
 function ppl(string memory message) pure returns (string memory) {
