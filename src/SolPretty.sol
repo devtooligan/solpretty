@@ -2,7 +2,7 @@
 pragma solidity ^0.8.21;
 
 /**
- * ,dPYb,                                   I8      I8
+ *                         ,dPYb,                                   I8      I8
  *                         IP'`Yb                                   I8      I8
  *                         I8  8I                                8888888888888888
  *                         I8  8'                                   I8      I8
@@ -23,17 +23,51 @@ import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {console2 as console} from 'forge-std/Test.sol';
 
+/** VALUE ONLY */
+
+// pp
 function pp(uint256 value) pure returns (string memory) {
     return SolPretty.format(value);
 }
 
+// pp and log
+function ppl(uint256 value) pure returns (string memory) {
+    return SolPretty.log(SolPretty.format(value));
+}
+
+// pp and log with message
+function ppl(uint256 value, string memory message) pure returns (string memory) {
+    return SolPretty.log(SolPretty.concat(SolPretty.format(value), message));
+}
+
+/** VALUE AND FIXEDDECIMALS ONLY */
 function pp(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
     return SolPretty.format(value, fixedDecimals);
 }
 
+function ppl(uint256 value, uint256 fixedDecimals) pure returns (string memory) {
+    return SolPretty.log(SolPretty.format(value, fixedDecimals));
+}
+
+function ppl(uint256 value, uint256 fixedDecimals, string memory message) pure returns (string memory) {
+    return SolPretty.log(SolPretty.concat(SolPretty.format(value, fixedDecimals), message));
+}
+
+/** VALUE, FIXED DECIMALS, DISPLAYDECIMALS */
+
 function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
     return SolPretty.format(value, fixedDecimals, displayDecimals);
 }
+
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure returns (string memory) {
+    return SolPretty.log(SolPretty.format(value, fixedDecimals, displayDecimals));
+}
+
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory message) pure returns (string memory) {
+    return SolPretty.log(SolPretty.concat(SolPretty.format(value, fixedDecimals, displayDecimals), message));
+}
+
+/** VALUE, FIXED DECIMALS, DISPLAYDECIMALS, FIXEDWIDTH */
 
 function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
     pure
