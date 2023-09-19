@@ -4,22 +4,22 @@ pragma solidity ^0.8.19;
 import {Test, console2 as console} from "forge-std/Test.sol";
 import {LibString as Solady} from "solady/src/utils/LibString.sol";
 import "../src/SolPretty.sol";
+
 using SolPretty for uint256;
 using SolPretty for string;
-contract SolPrettyTest is Test {
 
+contract SolPrettyTest is Test {
     function setUp() public {}
 
     function test_geeb() public {
-        uint target = 1000.5e18;
+        uint256 target = 1000.5e18;
         string memory expected = "1,000.50";
         string memory result = pp(target, 18, 2);
         assertTrue(result.log().eq(expected));
-
     }
 
     function test_benaadams() public {
-        uint target = 0;
+        uint256 target = 0;
         string memory expected = "0.00";
         string memory result = pp(target, 18, 2);
         require(result.log().eq(expected));
@@ -35,7 +35,7 @@ contract SolPrettyTest is Test {
             integerGroupingSize: 1,
             fixedWidth: 0
         });
-        target = uint(0.000001 ether);
+        target = uint256(0.000001 ether);
         result = pp(target, opts);
         expected = "0.000 00";
         assertTrue(result.log().eq(expected));

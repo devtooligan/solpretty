@@ -22,11 +22,12 @@ pragma solidity ^0.8.19;
 
 using SolPretty for uint256;
 using SolPretty for string;
+
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-import {console2} from 'forge-std/Test.sol';
+import {console2} from "forge-std/Test.sol";
 
 /// @notice A library for formatting anumeric values as strings
 /// @dev NOTE: CONVENIENCE FUNCTIONS BELOW
@@ -97,7 +98,6 @@ library SolPretty {
     function format(uint256 value, SolPrettyOptions memory opts) internal pure returns (string memory) {
         return _formatDecimal(value, opts);
     }
-
 
     // FORMAT formatDecimals engine and related fns****************************
 
@@ -267,28 +267,25 @@ library SolPretty {
         }
     }
 
-
     // LOG ********************************************************************
 
     /// @dev returns self for composability e.g. `pp(something).log().eq(somethingElse)`
-    function log(string memory message) internal pure returns(string memory) {
+    function log(string memory message) internal pure returns (string memory) {
         console2.log(message);
         return message;
     }
-
 
     /// @dev by default adds a space between message and append
-    function log(string memory message, string memory append) internal pure returns(string memory) {
-        message = message.concat(" " ).concat(append);
+    function log(string memory message, string memory append) internal pure returns (string memory) {
+        message = message.concat(" ").concat(append);
         console2.log(message);
         return message;
     }
 
-
     /// @dev optional addSpace bool for adding/ommitting space between message and append
-    function log(string memory message, string memory append, bool addSpace) internal pure returns(string memory) {
+    function log(string memory message, string memory append, bool addSpace) internal pure returns (string memory) {
         if (addSpace) {
-            message = message.concat(" " ).concat(append);
+            message = message.concat(" ").concat(append);
         } else {
             message = message.concat(append);
         }
@@ -322,10 +319,9 @@ library SolPretty {
     }
 
     function eq(string memory a, string memory b) internal pure returns (bool) {
-        return SoladyStrings.eq(a,b);
+        return SoladyStrings.eq(a, b);
     }
 }
-
 
 // Convenience Functions -- these are outside of the library
 
@@ -369,7 +365,10 @@ function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) pure
     return value.format(fixedDecimals, displayDecimals).log();
 }
 
-function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory message) pure returns (string memory) {
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory message)
+    pure
+    returns (string memory)
+{
     return value.format(fixedDecimals, displayDecimals).log(message);
 }
 
@@ -382,6 +381,21 @@ function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint2
     return value.format(fixedDecimals, displayDecimals, fixedWidth);
 }
 
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+    pure
+    returns (string memory)
+{
+    return value.format(fixedDecimals, displayDecimals, fixedWidth).log();
+}
+
+function ppl(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory message)
+    pure
+    returns (string memory)
+{
+    return value.format(fixedDecimals, displayDecimals, fixedWidth).log(message);
+}
+
+// VALUE AND OPTIONS
 function pp(uint256 value, SolPretty.SolPrettyOptions memory opts) pure returns (string memory) {
     return value.format(opts);
 }
