@@ -6,8 +6,6 @@ using LibFormatDec for string;
 
 
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-// import {console2} from "forge-std/Test.sol";
-
 
 /// @notice A library for formatting decimal values as strings
 library LibFormatDec {
@@ -35,6 +33,19 @@ library LibFormatDec {
             integerGroupingSize: 3,
             fixedWidth: 0, // automatic
             decimalDelimter: "." // "." in U.S. and "," in Europe
+        });
+    }
+
+    function getEmptyConfig() internal pure returns (Config memory config) {
+        config = Config({
+            fixedDecimals: 0,
+            displayDecimals: type(uint256).max,
+            fractionalDelimiter: " ",
+            fractionalGroupingSize: 0,
+            integerDelimiter: "",
+            integerGroupingSize: 0,
+            fixedWidth: 0,
+            decimalDelimter: ""
         });
     }
 

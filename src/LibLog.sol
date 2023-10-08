@@ -2,19 +2,17 @@
 pragma solidity ^0.8.19;
 
 import {console, console2} from "forge-std/Test.sol";
-import {LibFunctionCast} from "./LibFunctionCast.sol";
+import {LibFormatString} from "./LibFormatString.sol";
+// import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 
 library LibLog {
+    using LibFormatString for string;
+    // using SoladyStrings for string;
 
-    function logger(string memory value) internal pure returns (string memory) {
-        return LibFunctionCast.castToPure(_logger)(value);
-    }
-
-    function _logger(string memory message ) internal returns (string memory) {
+    function logger(string memory message) internal pure returns (string memory) {
         console2.log(message);
         return message;
     }
-
 
     /// @dev returns self for composability
     function log(string memory message) internal pure returns (string memory) {
