@@ -28,5 +28,24 @@ library LibFormatString {
     }
 
 
+    /// @dev wrapper around solady concat
+    function concat(string memory a, string memory b) internal pure returns (string memory) {
+        return SoladyStrings.concat(a, b);
+    }
+
+    function concat(string[] memory strings) internal pure returns (string memory result) {
+        result = "";
+        for (uint256 i = 0; i < strings.length; i++) {
+            result = SoladyStrings.concat(result, strings[i]);
+        }
+    }
+
+    function echo(string memory sol) internal pure returns (string memory result) {
+        return sol;
+    }
+
+    function eq(string memory a, string memory b) internal pure returns (bool) {
+        return SoladyStrings.eq(a, b);
+    }
 
 }
