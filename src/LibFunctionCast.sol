@@ -21,6 +21,15 @@ library LibFunctionCast {
             fnOut := fnIn
         }
     }
+    function castToPure(function(int256) internal view returns (string memory) fnIn)
+        internal
+        pure
+        returns (function(int256) pure returns(string memory) fnOut)
+    {
+        assembly {
+            fnOut := fnIn
+        }
+    }
 
     function castToPure(function(uint256, uint256) internal view returns (string memory) fnIn)
         internal
@@ -36,6 +45,16 @@ library LibFunctionCast {
         internal
         pure
         returns (function(uint256, uint256, uint256) pure returns(string memory) fnOut)
+    {
+        assembly {
+            fnOut := fnIn
+        }
+    }
+
+    function castToPure(function(int256, uint256, uint256) internal view returns (string memory) fnIn)
+        internal
+        pure
+        returns (function(int256, uint256, uint256) pure returns(string memory) fnOut)
     {
         assembly {
             fnOut := fnIn

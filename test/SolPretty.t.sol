@@ -1,19 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {Test, console2 as console} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
 import "../src/SolPretty.sol";
+import "../src/SolPrettyTools.sol";
 
-contract SolPrettyTest is Test, SolPretty {
-    using LibFormatString for *;
-    using LibFormatDec for *;
-    using LibLog for *;
+contract SolPrettyTest is Test, SolPrettyTools {
+    using SolPretty for *;
+    using SolKawai for *;
 
     function setUp() public {}
 
     function test_fractional1() public {
         uint256 target = 0.95e18;
         string memory expected = "0.9500";
+        assertTrue(pp(target, 18, 4).eq(expected));
+    }
+    function test_fractional1INT() public {
+        int256 target = -0.95e18;
+        string memory expected = "-0.9500";
         assertTrue(pp(target, 18, 4).eq(expected));
     }
 
@@ -45,9 +50,8 @@ contract SolPrettyTest is Test, SolPretty {
         uint256 target = 0;
         string memory expected = "0.00";
         require(pp(target, 18, 2).eq(expected));
-        // assertTrue(result.log().eq(expected));
 
-        LibFormatDec.Config memory config = LibFormatDec.Config({
+        SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 5, // if this is less than fixedDecimals, value will be truncated
             decimalDelimter: ".",
@@ -55,7 +59,8 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 3,
             integerDelimiter: ",",
             integerGroupingSize: 1,
-            fixedWidth: 0
+            fixedWidth: 0,
+            isNegative: false
         });
         target = uint256(0.000001 ether);
         expected = "0.000 00";
@@ -92,10 +97,10 @@ contract SolPrettyTest is Test, SolPretty {
         assertTrue(pp(target, 18, 4, 20).eq(expected));
     }
 
-    function test_pp_opts1() public {
+    function test_pp_config1() public {
         uint256 target = 123456789987654321987654321;
         string memory expected = "1|2|3|4|5|6|7|8|9X9876 5432 19";
-        LibFormatDec.Config memory opts = LibFormatDec.Config({
+        SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 10, // if this is less than fixedDecimals, value will be truncated
             decimalDelimter: "X",
@@ -103,15 +108,16 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 4,
             integerDelimiter: "|",
             integerGroupingSize: 1,
-            fixedWidth: 0
+            fixedWidth: 0,
+            isNegative: false
         });
-        assertTrue(pp(target, opts).eq(expected));
+        assertTrue(pp(target, config).eq(expected));
     }
 
-    function test_pp_opts2() public {
+    function test_pp_config2() public {
         uint256 target = 123456789987654321987654321;
         string memory expected = "1,234,567,899,876,543,219,876,543-21";
-        LibFormatDec.Config memory opts = LibFormatDec.Config({
+        SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 2,
             displayDecimals: 10, // if this is less than fixedDecimals, value will be truncated
             decimalDelimter: "-",
@@ -119,15 +125,16 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 0
+            fixedWidth: 0,
+            isNegative: false
         });
-        assertTrue(pp(target, opts).eq(expected));
+        assertTrue(pp(target, config).eq(expected));
     }
 
-    function test_pp_opts3() public {
+    function test_pp_config3() public {
         uint256 target = 123456789987654321987654321;
         string memory expected = "123456789987654321O987X654X321";
-        LibFormatDec.Config memory opts = LibFormatDec.Config({
+        SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 9,
             displayDecimals: 10,
             decimalDelimter: "O",
@@ -135,28 +142,29 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 3,
             integerDelimiter: "",
             integerGroupingSize: 3,
-            fixedWidth: 0
+            fixedWidth: 0,
+            isNegative: false
         });
-        assertTrue(pp(target, opts).eq(expected));
+        assertTrue(pp(target, config).eq(expected));
     }
 
     function testWithoutSolPretty() public pure {
-        console.log(uint256(12300000000000000000));
-        console.log("from pool:");
-        console.log(uint256(127000000000000000000));
-        console.log(uint256(128000000000000000000));
-        console.log(uint256(7000000000000000000));
-        console.log("here");
-        console.logBytes(abi.encode(1));
-        console.log(uint256(7332330000000000000));
-        console.log(uint256(25650003));
-        console.log(uint256(25750004));
-        console.log(uint256(25750005));
+        console2.log(uint256(12300000000000000000));
+        console2.log("from pool:");
+        console2.log(uint256(127000000000000000000));
+        console2.log(uint256(128000000000000000000));
+        console2.log(uint256(7000000000000000000));
+        console2.log("here");
+        console2.logBytes(abi.encode(1));
+        console2.log(uint256(7332330000000000000));
+        console2.log(uint256(25650003));
+        console2.log(uint256(25750004));
+        console2.log(uint256(25750005));
         revert("sucker");
     }
 
     function testFixedWidth() public {
-        LibFormatDec.Config memory optsWETH = LibFormatDec.Config({
+        SolPretty.Config memory configWETH = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 4,
             decimalDelimter: ".",
@@ -164,13 +172,14 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 20
+            fixedWidth: 20,
+            isNegative: false
         });
-        assertTrue(pp(1500000000000000000, optsWETH).eq("              1.5000"));
+        assertTrue(pp(1500000000000000000, configWETH).eq("              1.5000"));
     }
 
     function testSolPrettytestWithoutSolPretty() public pure {
-        LibFormatDec.Config memory optsWETH = LibFormatDec.Config({
+        SolPretty.Config memory configWETH = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 4,
             decimalDelimter: ".",
@@ -178,10 +187,11 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 20
+            fixedWidth: 20,
+            isNegative: false
         });
 
-        LibFormatDec.Config memory optsUSDC = LibFormatDec.Config({
+        SolPretty.Config memory configUSDC = SolPretty.Config({
             fixedDecimals: 6,
             displayDecimals: 4,
             decimalDelimter: ".",
@@ -189,17 +199,18 @@ contract SolPrettyTest is Test, SolPretty {
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 20
+            fixedWidth: 20,
+            isNegative: false
         });
 
-        pp(uint256(12300000000000000000).format(optsWETH).concat(" Alice's WETH balance before"));
-        pp(uint256(127000000000000000000).format(optsWETH).concat(" Alice's WETH balance during"));
-        pp(uint256(128000000000000000000).format(optsWETH).concat(" Alice's WETH balance after"));
-        pp(uint256(7000000000000000000).format(optsWETH).concat(" Bob's WETH balance before"));
-        pp(uint256(7332330000000000000).format(optsWETH).concat(" Bob's WETH balance after"));
-        pp(uint256(25650003).format(optsUSDC).concat(" Alice USDC final balance"));
-        pp(uint256(25750004).format(optsUSDC).concat(" Alice USDC final balance"));
-        pp(uint256(25750005).format(optsUSDC).concat(" Alice USDC final balance"));
+        pp(uint256(12300000000000000000).format(configWETH).concat(" Alice's WETH balance before"));
+        pp(uint256(127000000000000000000).format(configWETH).concat(" Alice's WETH balance during"));
+        pp(uint256(128000000000000000000).format(configWETH).concat(" Alice's WETH balance after"));
+        pp(uint256(7000000000000000000).format(configWETH).concat(" Bob's WETH balance before"));
+        pp(uint256(7332330000000000000).format(configWETH).concat(" Bob's WETH balance after"));
+        pp(uint256(25650003).format(configUSDC).concat(" Alice USDC final balance"));
+        pp(uint256(25750004).format(configUSDC).concat(" Alice USDC final balance"));
+        pp(uint256(25750005).format(configUSDC).concat(" Alice USDC final balance"));
     }
 
     function testConcatList() public {
@@ -219,8 +230,66 @@ contract SolPrettyTest is Test, SolPretty {
         list.log();
     }
 
-    function test_prettyPrint() public {
+    function test_echo() public {
         string memory hi = "hi";
         assertTrue(hi.echo().eq("hi"));
     }
+
+    function testdivider() public {
+        setWidth(80);
+        string[] memory result = new string[](3);
+        result = divider();
+
+        string memory expected = "-".fill(80);
+        require(result[1].eq(expected));
+
+        divider(0);
+        divider(1);
+        divider(2);
+        divider("Z");
+        divider("1234567");
+    }
+
+    function testMultiDivider() public {
+        dividerMulti({
+            symbol1: SolKawai.multiLinePattern_00_1of2,
+            symbol2: SolKawai.multiLinePattern_00_2of2
+        });
+
+        string[] memory result = dividerMulti();
+        string memory empty = "";
+        string memory expected1 = "     .-.     .-.     .-.     .-.     .-.     .-.     .-.     .-.     .-.     .-.";
+        string memory expected2 = "`._.'   `._.'   `._.'   `._.'   `._.'   `._.'   `._.'   `._.'   `._.'   `._.'   ";
+        require(result[0].eq(empty));
+        require(result[1].eq(expected1));
+        require(result[2].eq(expected2));
+        require(result[3].eq(empty));
+
+    }
+
+    function testBorder() public {
+        string[] memory body = new string[](3);
+        body[0] = SolPretty.format(uint(1.875 ether), 18, 2, 15).space().concat("USDT balance");
+        body[1] = SolPretty.format(uint(0.0875 ether), 18, 2, 15).space().concat("WETH balance");
+        body[2] = SolPretty.format(uint(122828.75 ether), 18, 2, 15).space().concat("DAI balance");
+        pp(addBorder(body));
+
+        string[] memory result = new string[](9);
+        result = pp(addBorder(body, "Alice's balances"));
+        require(result[0].eq("*".fill(80)));
+        string memory empty = "*                                                                              *";
+        require(result[1].eq(empty));
+        string memory title = "*                               Alice's balances                               *";
+        require(result[2].eq(title));
+        require(result[3].eq(empty));
+        string memory currentBody = "*            1.87 USDT balance                                                 *";
+        require(result[4].eq(currentBody));
+        currentBody = "*            0.08 WETH balance                                                 *";
+        require(result[5].eq(currentBody));
+        currentBody = "*      122,828.75 DAI balance                                                  *";
+        require(result[6].eq(currentBody));
+        require(result[7].eq(empty));
+        require(result[8].eq("*".fill(80)));
+    }
+
 }
