@@ -84,6 +84,12 @@ contract SolPrettyTools {
         return symbols.multiLineDivider(toolsConfig.width);
     }
 
+    function dividerSolady() internal view returns (string[] memory) {
+        string memory div =  SolKawai.solady_divider;
+        return divider(div);
+    }
+
+
     // TODO: get unicode workin next
     //  then switch to SimpleBox and CoreBox
     //  Sections have a name and can be rendered with or without a title or border.
@@ -100,6 +106,21 @@ contract SolPrettyTools {
 
     function addBorder(string[] memory body) internal view returns (string[] memory result) {
         return addBorder(body, "");
+    }
+
+    function addBorderSolady(string[] memory body) internal view returns (string[] memory result) {
+        return addBorderSolady(body, "");
+    }
+
+    function addBorderSolady(string[] memory body, string memory title) internal view returns (string[] memory result) {
+        SolKawai.Box memory params = SolKawai.Box({
+            title: title,
+            symbol: SolKawai.solady_divider,
+            totalWidth: toolsConfig.width,
+            borderWidth: 7,
+            borderHeight: 3
+        });
+        return body.withBorder(params);
     }
 
     function addBorder(string[] memory body, string memory title) internal view returns (string[] memory result) {

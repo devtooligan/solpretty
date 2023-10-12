@@ -43,7 +43,7 @@ library SolKawai { // SOLかわいい
     string constant multiLinePattern_00_1of2 = "     .-.";
     string constant multiLinePattern_00_2of2 = "`._.'   ";
 
-    string constant solady_divider = unicode"•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•";
+    string constant solady_divider = unicode"´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:";
 
     function singleLineDivider(string memory symbol, uint256 width) internal pure returns (string[] memory result) {
         return singleLineDivider(symbol, width, 1, 1, false);

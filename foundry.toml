@@ -3,6 +3,7 @@ src = "src"
 out = "out"
 libs = ["lib"]
 remappings = [
+    "unicode-eth/contracts/=lib/unicode-eth/contracts/"
 ]
 
 
