@@ -10,8 +10,6 @@ import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 /**
-TODO: Get rid of all the overloading in SolPretty lib and only keep config ones and maybe one simple one
-Then do all the overloading in SolPrettyTools.  and always use the config in pp
 Do hex numbers
 deal with unicode - runecount?
 Do addresses like short hex
@@ -107,6 +105,7 @@ library SolPretty {
     }
 
     // DEFAULT Config ********************************************************
+
     function getDefaultConfig() internal pure returns (Config memory config) {
         config = Config({
             fixedDecimals: 0, // defaults to zero decimal places
@@ -156,58 +155,12 @@ library SolPretty {
         return _formatDecimal(uintValue, opts);
     }
 
-    function format(int256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
-        uint256 uintValue;
-        if (value >= 0) {
-            uintValue = uint256(value);
-        } else if (value == type(int256).min) {
-            uintValue = 0x800000000000000000000000000000000000000000000000000000000000000;
+    function format(bool value) internal pure returns (string memory) {
+        if (value) {
+            return "true";
         } else {
-            uintValue = uint256(-1 * value);
+            return "false";
         }
-        Config memory opts = getDefaultConfig();
-        opts.fixedDecimals = fixedDecimals;
-        opts.displayDecimals = displayDecimals;
-        if (value < 0) {
-            opts.isNegative = true;
-        } else {
-            opts.isNegative = false;
-        }
-
-        return _formatDecimal(uintValue, opts);
-    }
-
-    function format(uint256 value) internal pure returns (string memory) {
-        return _formatDecimal(value, getDefaultConfig());
-    }
-
-    function format(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
-        Config memory opts = getDefaultConfig();
-        opts.fixedDecimals = fixedDecimals;
-        return _formatDecimal(value, opts);
-    }
-
-    function format(uint256 value, uint256 fixedDecimals, uint256 displayDecimals)
-        internal
-        pure
-        returns (string memory)
-    {
-        Config memory opts = getDefaultConfig();
-        opts.fixedDecimals = fixedDecimals;
-        opts.displayDecimals = displayDecimals;
-        return _formatDecimal(value, opts);
-    }
-
-    function format(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
-        internal
-        pure
-        returns (string memory)
-    {
-        Config memory opts = getDefaultConfig();
-        opts.fixedDecimals = fixedDecimals;
-        opts.displayDecimals = displayDecimals;
-        opts.fixedWidth = fixedWidth;
-        return _formatDecimal(value, opts);
     }
 
     function format(uint256 value, Config memory opts) internal pure returns (string memory) {
@@ -492,7 +445,8 @@ library SolPretty {
 
     /// @dev by default adds a space between message and append
     function log(string memory message, string memory append) internal pure returns (string memory) {
-        return log(message, append, true);
+        log(message, append, true);
+        return message;
     }
 
     /// @dev optional addSpace bool for adding/ommitting space between message and append

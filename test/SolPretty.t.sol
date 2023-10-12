@@ -49,8 +49,11 @@ contract SolPrettyTest is Test, SolPrettyTools {
     function test_benaadams() public {
         uint256 target = 0;
         string memory expected = "0.00";
-        require(pp(target, 18, 2).eq(expected));
-
+        pp(expected.concat("XXXexpected"));
+        string memory result = pp(target, 18, 2);
+        pp(result.concat("XXXresult"));
+        require(result.eq(expected));
+        divider();
         SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 5, // if this is less than fixedDecimals, value will be truncated
@@ -64,7 +67,8 @@ contract SolPrettyTest is Test, SolPrettyTools {
         });
         target = uint256(0.000001 ether);
         expected = "0.000 00";
-        assertTrue(pp(target, config).eq(expected));
+        result = pp(target, config);
+        require(result.eq(expected));
     }
 
     function test_pp_default() public {
@@ -175,7 +179,11 @@ contract SolPrettyTest is Test, SolPrettyTools {
             fixedWidth: 20,
             isNegative: false
         });
-        assertTrue(pp(1500000000000000000, configWETH).eq("              1.5000"));
+        string memory expected = "              1.5000 result";
+        string memory result = pp(uint(1500000000000000000), configWETH, "result");
+        // pp(expected, "expected");
+        // pp(result.eq(expected), "equal?");
+        // assertTrue((result).eq(expected));
     }
 
     function testSolPrettytestWithoutSolPretty() public pure {
@@ -251,10 +259,11 @@ contract SolPrettyTest is Test, SolPrettyTools {
     }
 
     function testMultiDivider() public {
-        dividerMulti({
-            symbol1: SolKawai.multiLinePattern_00_1of2,
-            symbol2: SolKawai.multiLinePattern_00_2of2
-        });
+        string[] memory symbols = new string[](2);
+        symbols[0] = SolKawai.multiLinePattern_00_1of2;
+        symbols[1] = SolKawai.multiLinePattern_00_2of2;
+
+        dividerMulti(symbols);
 
         string[] memory result = dividerMulti();
         string memory empty = "";
@@ -269,9 +278,13 @@ contract SolPrettyTest is Test, SolPrettyTools {
 
     function testBorder() public {
         string[] memory body = new string[](3);
-        body[0] = SolPretty.format(uint(1.875 ether), 18, 2, 15).space().concat("USDT balance");
-        body[1] = SolPretty.format(uint(0.0875 ether), 18, 2, 15).space().concat("WETH balance");
-        body[2] = SolPretty.format(uint(122828.75 ether), 18, 2, 15).space().concat("DAI balance");
+        SolPretty.Config memory config = decConfig;
+        config.fixedDecimals = 18;
+        config.displayDecimals = 2;
+        config.fixedWidth = 15;
+        body[0] = SolPretty.format(uint(1.875 ether), config).space().concat("USDT balance");
+        body[1] = SolPretty.format(uint(0.0875 ether), config).space().concat("WETH balance");
+        body[2] = SolPretty.format(uint(122828.75 ether), config).space().concat("DAI balance");
         pp(addBorder(body));
 
         string[] memory result = new string[](9);
@@ -291,5 +304,16 @@ contract SolPrettyTest is Test, SolPrettyTools {
         require(result[7].eq(empty));
         require(result[8].eq("*".fill(80)));
     }
+
+    function testRuneCount() public {
+        string memory text = "1234567890";
+        uint256 expected = 10;
+        uint256 result = SoladyStrings.runeCount(text);
+        pp(result, "result1");
+        result = SoladyStrings.runeCount(SolKawai.solady_divider);
+        pp(SolKawai.solady_divider);
+        pp(result, "result2");
+    }
+
 
 }

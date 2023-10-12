@@ -13,10 +13,12 @@ import {console2 as console} from "forge-std/Test.sol";
 library SolKawai { // SOLかわいい
     using SolPretty for *;
 
-    // GRAPHICS ********************************************************************
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                         GRAPHICS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    // dividers / section breaks / lines
-    /**
+
+    /** dividers / section breaks / lines
 
         --------------------------------------------------------------------------------
 
@@ -32,7 +34,8 @@ library SolKawai { // SOLかわいい
 
         ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
 
-     */
+    */
+
     string constant singleLinePattern_00 = "_,.-'~'-.,_";
     string constant singleLinePattern_01 = "_/~\\";
     string constant singleLinePattern_02 = ".:*~*:._";
@@ -40,33 +43,19 @@ library SolKawai { // SOLかわいい
     string constant multiLinePattern_00_1of2 = "     .-.";
     string constant multiLinePattern_00_2of2 = "`._.'   ";
 
+    string constant solady_divider = unicode"•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•";
+
     function singleLineDivider(string memory symbol, uint256 width) internal pure returns (string[] memory result) {
-        return singleLineDivider(symbol, width, 1, 1);
+        return singleLineDivider(symbol, width, 1, 1, false);
     }
 
-    function singleLineDividerUnicode(string memory symbol, uint256 width)
-        internal
-        pure
-        returns (string[] memory result)
-    {
-        return singleLineDivider(symbol, width, 1, 1, true);
-    }
-
-    function singleLineDividerUnicode(string memory symbol, uint256 width, uint256 spaceAbove, uint256 spaceBelow)
-        internal
-        pure
-        returns (string[] memory result)
-    {
-        return singleLineDivider(symbol, width, spaceAbove, spaceBelow, true);
-    }
-
-    function singleLineDivider(string memory symbol, uint256 width, uint256 spaceAbove, uint256 spaceBelow)
-        internal
-        pure
-        returns (string[] memory result)
-    {
-        return singleLineDivider(symbol, width, spaceAbove, spaceBelow, false);
-    }
+    // function singleLineDividerUnicode(string memory symbol, uint256 width)
+    //     internal
+    //     pure
+    //     returns (string[] memory result)
+    // {
+    //     return singleLineDivider(symbol, width, 1, 1, true);
+    // }
 
     function singleLineDivider(string memory symbol, uint256 width, uint256 spaceAbove, uint256 spaceBelow, bool hasUnicode)
         internal
@@ -87,28 +76,21 @@ library SolKawai { // SOLかわいい
         }
     }
 
-    function singleLine(string memory symbol, uint256 width) internal pure returns (string memory result) {
-        return symbol.fill(width);
-    }
-
-
     function multiLineDivider(string[] memory symbols, uint256 width) internal pure returns (string[] memory result) {
         return multiLineDivider(symbols, width, 1, 1);
     }
 
-    /// @dev saves hassle of creating array
-    function multiLineDivider(string memory symbol1, string memory symbol2, uint256 width) internal pure returns (string[] memory result) {
-        string[] memory symbols = new string[](2);
-        symbols[0] = symbol1;
-        symbols[1] = symbol2;
-        return multiLineDivider(symbols, width, 1, 1);
-    }
+    // function multiLineDividerUnicode(string[] memory symbols, uint256 width) internal pure returns (string[] memory result) {
+    //     return multiLineDivider(symbols, width, 1, 1, true);
+    // }
 
+    /// @dev once we figure out unicode we may not need separate functions. its really about the fill. can there be one fill that handles both?
     function multiLineDivider(string[] memory symbols, uint256 width, uint256 spaceAbove, uint256 spaceBelow)
         internal
         pure
         returns (string[] memory result)
     {
+        // TODO: implement unicode
         result = new string[](spaceAbove + spaceBelow + 2);
         uint256 counter;
         uint256 index;
