@@ -2,12 +2,14 @@
 pragma solidity ^0.8.19;
 
 import {Test, console2} from "forge-std/Test.sol";
+import {Unicode} from "../src/LibUnicode.sol";
 import "../src/SolPretty.sol";
 import "../src/SolPrettyTools.sol";
 
 contract SolPrettyTest is Test, SolPrettyTools {
     using SolPretty for *;
     using SolKawai for *;
+    using Unicode for *;
 
     function setUp() public {}
 
@@ -316,6 +318,22 @@ contract SolPrettyTest is Test, SolPrettyTools {
         pp(addBorder(body, box));
         box = SolKawai.Box("Alice's balances", "X", 80, 10, 5);
         pp(addBorder(body, box));
+
+        pp();
+        pp();
+        pp();
+        pp();
+        pp();
+        pp();
+        pp(body);
+        pp();
+        console.log("dividerSolady():");
+        pp();
+        dividerSolady();
+        console.log("addBorderSolady()");
+        pp();
+        pp(addBorderSolady(body));
+
     }
 
     function testRuneCount() public {
@@ -329,6 +347,26 @@ contract SolPrettyTest is Test, SolPrettyTools {
         pp(text);
         pp(result, "result2");
 
+    }
+
+    // function decodeChar(string calldata text, uint256 cursor) public pure returns (string memory char, uint256 nextCursor) {
+    //     return Unicode.decodeChar(text, cursor);
+    // }
+
+    function testSlice() public {
+        string memory text = unicode".•°:°.´+˚.";
+        uint length = SoladyStrings.runeCount(text);
+        pp(length, "length");
+        uint cursor = 0;
+        string memory char;
+        (char, cursor) = Unicode.decodeChar(text, cursor);
+        pp(char, "char1");
+        pp(cursor, "cursor1");
+        (char, cursor) = Unicode.decodeChar(text, cursor);
+        pp(char, "char2");
+        pp(cursor, "cursor2");
+
+        pp(text.unicodeSlice(0, 2), "slice1");
     }
 
 

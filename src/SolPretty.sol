@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import {console, console2} from "forge-std/Test.sol";
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
-
-// using LibFormatDec for uint256;
-// using LibFormatDec for string;
-
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
+import {console, console2} from "forge-std/Test.sol";
+import {Unicode} from "./LibUnicode.sol";
 
 /**
 Do hex numbers
@@ -103,6 +100,7 @@ jgs  (_____________________)
 
 library SolPretty {
     using SoladyStrings for string;
+    using Unicode for string;
 
     // ************************************************************************
     // LibFormatDec
@@ -407,6 +405,23 @@ library SolPretty {
         return SoladyStrings.eq(a, b);
     }
 
+    function unicodeSlice(string memory str, uint256 start, uint256 end) internal pure returns (string memory result) {
+        uint charCursor = 0;
+        uint byteCursor = 0;
+        uint length = str.runeCount();
+        require(start < length, "SolPretty.unicodeSlice: start out of bounds");
+        end = end > length ? length : end;
+        string memory char;
+        result = "";
+        while (charCursor < end) {
+            (char, byteCursor) = str.decodeChar(byteCursor);
+            if (charCursor >= start) {
+                result = result.concat(char);
+                charCursor++;
+            }
+        }
+    }
+
     function shorten(string memory str, uint256 newLength) internal pure returns (string memory) {
         uint256 currentLength = bytes(str).length;
         require(newLength <= currentLength, "SolPretty.shorten: new length too long");
@@ -414,7 +429,11 @@ library SolPretty {
         //     mstore(str, newLength) // overwrite the length, shortenining it
         // }
         // return str;
-        return str.slice(0, newLength);
+        if (str.isASCII()) {
+            return str.slice(0, newLength);
+        } else {
+            return unicodeSlice(str, 0, newLength);
+        }
     }
 
     function fill(string memory symbol, uint256 width) internal pure returns (string memory filled) {
