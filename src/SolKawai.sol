@@ -125,7 +125,7 @@ library SolKawai { // SOLかわいい
         *********************************
     */
 
-    struct BorderParams {
+    struct Box {
         string title; // "" to ommit
         string symbol;
         uint256 totalWidth;
@@ -146,12 +146,12 @@ library SolKawai { // SOLかわいい
         pure
         returns (string[] memory result)
     {
-        BorderParams memory borderParams = BorderParams(title, symbol, totalWidth, 1, 1);
-        return withBorder(body, borderParams);
+        Box memory box = Box(title, symbol, totalWidth, 1, 1);
+        return withBorder(body, box);
     }
 
 
-    function withBorder(string[] memory body, BorderParams memory params)
+    function withBorder(string[] memory body, Box memory params)
         internal
         pure
         returns (string[] memory result)
@@ -206,12 +206,11 @@ library SolKawai { // SOLかわいい
             for (uint256 i; i < body.length; i++) {
                 require(bytes(body[i]).length <= maxBodyWidth, "SolKawai: body line is too long");
                 result[currentIndex] = sideBorder.space().concat(
-                    body[i].addSpaces(maxBodyWidth - bytes(body[i]).length)
+                    body[i].addSpaces(maxBodyWidth - SoladyStrings.runeCount(body[i]))
                 ).concat(sideBorder);
                 currentIndex++;
             }
         }
-
         // add blank line
         result[currentIndex] = (
             sideBorder.addSpaces(params.totalWidth - 2 * params.borderWidth)

@@ -84,13 +84,17 @@ contract SolPrettyTools {
         return symbols.multiLineDivider(toolsConfig.width);
     }
 
-    struct BorderParams {
-        string title; // "" to ommit
-        string symbol;
-        uint256 totalWidth;
-        uint256 borderWidth;
-        uint256 borderHeight;
-    }
+    // TODO: get unicode workin next
+    //  then switch to SimpleBox and CoreBox
+    //  Sections have a name and can be rendered with or without a title or border.
+    //  make big box, before attack, after attack sb:
+    /**
+     * setBeforeBalance(string memory name, uint256 beforeBalance)
+     * setAfterBalance(string memory name, uint256 afterBalance)
+     * report().addBorder().log()
+     *
+     * then done i think. not doing tables now
+     */
 
     /**            borders / boxes */
 
@@ -99,7 +103,7 @@ contract SolPrettyTools {
     }
 
     function addBorder(string[] memory body, string memory title) internal view returns (string[] memory result) {
-        SolKawai.BorderParams memory params = SolKawai.BorderParams({
+        SolKawai.Box memory params = SolKawai.Box({
             title: title,
             symbol: toolsConfig.singleDividerSymbols[0],
             totalWidth: toolsConfig.width,
@@ -109,7 +113,7 @@ contract SolPrettyTools {
         return body.withBorder(params);
     }
 
-    function addBorder(string[] memory body, SolKawai.BorderParams memory params)
+    function addBorder(string[] memory body, SolKawai.Box memory params)
         internal
         pure
         returns (string[] memory result)
@@ -272,7 +276,7 @@ contract SolPrettyTools {
 
     // value, config, label
     function pp(int256 value, SolPretty.Config memory config, string memory label) internal pure returns (string memory) {
-        return value.format(config).log(label, false);
+        return value.format(config).log(label);
     }
     // value, config, label
     function pp(int256 value, SolPretty.Config memory config) internal pure returns (string memory) {

@@ -303,16 +303,32 @@ contract SolPrettyTest is Test, SolPrettyTools {
         require(result[6].eq(currentBody));
         require(result[7].eq(empty));
         require(result[8].eq("*".fill(80)));
+        /**
+            struct Box {
+                string title; // "" to ommit
+                string symbol;
+                uint256 totalWidth;
+                uint256 borderWidth;
+                uint256 borderHeight;
+            }
+        */
+        SolKawai.Box memory box = SolKawai.Box("Alice's balances", SolKawai.solady_divider, 80, 10, 5);
+        pp(addBorder(body, box));
+        box = SolKawai.Box("Alice's balances", "X", 80, 10, 5);
+        pp(addBorder(body, box));
     }
 
     function testRuneCount() public {
-        string memory text = "1234567890";
+        string memory text = unicode".•°:°.´+˚.";
         uint256 expected = 10;
         uint256 result = SoladyStrings.runeCount(text);
+        pp(text);
         pp(result, "result1");
-        result = SoladyStrings.runeCount(SolKawai.solady_divider);
-        pp(SolKawai.solady_divider);
+        text = SoladyStrings.slice(text, 0, 5);
+        result = SoladyStrings.runeCount(text);
+        pp(text);
         pp(result, "result2");
+
     }
 
 

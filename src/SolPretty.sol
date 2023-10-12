@@ -81,6 +81,24 @@ Art by Krogg
 _\  \\p__`o-o'__\  \\p__`o-o'__\  \\p__`o-o'__\  \\p__`o-o'_
 ------------------------------------------------------------
 
+               _._
+           __.{,_.).__
+        .-"           "-.
+      .'  __.........__  '.
+     /.-'`___.......___`'-.\
+    /_.-'` /   \ /   \ `'-._\
+    |     |   '/ \'   |     |
+    |      '-'     '-'      |
+    ;                       ;
+    _\         ___         /_
+   /  '.'-.__  ___  __.-'.'  \
+ _/_    `'-..._____...-'`    _\_
+/   \           .           /   \
+\____)         .           (____/
+    \___________.___________/
+      \___________________/
+jgs  (_____________________)
+
  */
 
 library SolPretty {
@@ -392,18 +410,11 @@ library SolPretty {
     function shorten(string memory str, uint256 newLength) internal pure returns (string memory) {
         uint256 currentLength = bytes(str).length;
         require(newLength <= currentLength, "SolPretty.shorten: new length too long");
-        assembly {
-            mstore(str, newLength) // overwrite the length, shortenining it
-        }
-        return str;
-    }
-
-    /// @dev returns a string of symbols repeated n times
-    function repeat(string memory symbol, uint256 n) internal pure returns (string memory filled) {
-        filled = "";
-        for (uint256 idx = 0; idx < n; idx++) {
-            filled = filled.concat(symbol);
-        }
+        // assembly {
+        //     mstore(str, newLength) // overwrite the length, shortenining it
+        // }
+        // return str;
+        return str.slice(0, newLength);
     }
 
     function fill(string memory symbol, uint256 width) internal pure returns (string memory filled) {
@@ -418,10 +429,10 @@ library SolPretty {
         pure
         returns (string memory filled)
     {
-        if (width == 0) return prepend;
-        uint256 symbolLength = bytes(symbol).length;
+        if (width == 0) return "";
+        uint256 symbolLength = SoladyStrings.runeCount(symbol);
         uint256 full = width / symbolLength;
-        filled = repeat(symbol, full);
+        filled = SoladyStrings.repeat(symbol, full);
         uint256 part = width % symbolLength;
         if (part > 0) {
             filled = filled.concat(shorten(symbol, part));
