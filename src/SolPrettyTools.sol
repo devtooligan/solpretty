@@ -54,7 +54,12 @@ contract SolPrettyTools {
         decConfig = decConfig_;
     }
 
-    // GRAPHIC FUNCTIONS  *******************************************************
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                         GRAPHICS                            */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    /**            dividers / section breaks / lines */
+
 
     /// @dev logs a divider line
     function divider() internal view returns (string[] memory) {
@@ -70,11 +75,13 @@ contract SolPrettyTools {
     }
 
     function dividerMulti() internal view returns (string[] memory) {
-        return dividerMulti(toolsConfig.multiDividerSymbols[0][0], toolsConfig.multiDividerSymbols[0][1]);
+        string[] memory symbols = new string[](2);
+        symbols[0] = toolsConfig.multiDividerSymbols[0][0];
+        symbols[1] = toolsConfig.multiDividerSymbols[0][1];
+        return symbols.multiLineDivider(toolsConfig.width);
     }
-
-    function dividerMulti(string memory symbol1, string memory symbol2) internal view returns (string[] memory) {
-        return SolKawai.multiLineDivider({width: toolsConfig.width, symbol1: symbol1, symbol2: symbol2}).log();
+    function dividerMulti(string[] memory symbols) internal view returns (string[] memory) {
+        return symbols.multiLineDivider(toolsConfig.width);
     }
 
     struct BorderParams {
@@ -84,6 +91,8 @@ contract SolPrettyTools {
         uint256 borderWidth;
         uint256 borderHeight;
     }
+
+    /**            borders / boxes */
 
     function addBorder(string[] memory body) internal view returns (string[] memory result) {
         return addBorder(body, "");
@@ -133,127 +142,99 @@ contract SolPrettyTools {
      *
      */
 
-    /** ************************* GENERAL  ********************************* */
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                         STRING                              */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     // so you don't have to type console.log
     function pp() internal pure returns (string memory) {
-        return pp("");
+        return "".log();
     }
 
     function pp(string memory label) internal pure returns (string memory) {
         return label.log();
     }
 
+    function pp(string memory label1, string memory label2) internal pure returns (string memory) {
+        return label1.space().concat(label2).log();
+    }
+
     function pp(string[] memory labels) internal pure returns (string[] memory) {
         return SolPretty.log(labels);
     }
 
-    /** **************** CONVENIENCE FUNCTIONS - UINT  ********************* */
-
-    // format and log - UINT
-    function pp(uint256 value) internal pure returns (string memory) {
-        return _pp0.castToPure()(value);
+    function pp(bool isTrue, string memory label) internal pure returns (string memory) {
+        return isTrue.format().log(label);
     }
 
-    // format and log - INT
-    function pp(int256 value) internal pure returns (string memory) {
-        return _ppi0.castToPure()(value);
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                         UINT                                */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    // value, config, label
+    function pp(uint256 value, SolPretty.Config memory config, string memory label) internal pure returns (string memory) {
+        return value.format(config).log(label);
     }
 
-    function _ppi0(int256 value) internal view returns (string memory) {
-        return value.format(decConfig).log();
-    }
-
-
-    function _pp0(uint256 value) internal view returns (string memory) {
-        return value.format(decConfig).log();
-    }
-
-    function pp(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
-        return _pp1.castToPure()(value, fixedDecimals);
-    }
-
-    function _pp1(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
-        return value.format(fixedDecimals).log();
-    }
-
-    function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
-        return _pp2.castToPure()(value, fixedDecimals, displayDecimals);
-    }
-
-    function _pp2(uint256 value, uint256 fixedDecimals, uint256 displayDecimals)
-        internal
-        pure
-        returns (string memory)
-    {
-        return value.format(fixedDecimals, displayDecimals).log();
-    }
-
-    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
-        return _pp2i.castToPure()(value, fixedDecimals, displayDecimals);
-    }
-
-    function _pp2i(int256 value, uint256 fixedDecimals, uint256 displayDecimals)
-        internal
-        pure
-        returns (string memory)
-    {
-        return value.format(fixedDecimals, displayDecimals).log();
-    }
-
-    function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
-        internal
-        pure
-        returns (string memory)
-    {
-        return _pp3.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth);
-    }
-
-    function _pp3(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
-        internal
-        pure
-        returns (string memory)
-    {
-        return value.format(fixedDecimals, displayDecimals, fixedWidth).log();
-    }
-
+    // value, config
     function pp(uint256 value, SolPretty.Config memory config) internal pure returns (string memory) {
-        return value.format(config).log();
+        return pp(value, config, "");
     }
 
-    // format and log with label
+
+    // value, label
     function pp(uint256 value, string memory label) internal pure returns (string memory) {
-        return _pp4.castToPure()(value, label);
+        return _pp0.castToPure()(value, label);
+    }
+    //value
+    function pp(uint256 value) internal pure returns (string memory) {
+        return _pp0.castToPure()(value, "");
+    }
+    function _pp0(uint256 value, string memory label) internal view returns (string memory) {
+        return pp(value, decConfig, label);
     }
 
-    function _pp4(uint256 value, string memory label) internal pure returns (string memory) {
-        return value.format().log(label);
-    }
 
+    // value, fixedDecimals, label
     function pp(uint256 value, uint256 fixedDecimals, string memory label) internal pure returns (string memory) {
-        return _pp5.castToPure()(value, fixedDecimals, label);
+        return _pp1.castToPure()(value, fixedDecimals, label);
+    }
+    // value, fixedDecimals
+    function pp(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
+        return _pp1.castToPure()(value, fixedDecimals, "");
+    }
+    function _pp1(uint256 value, uint256 fixedDecimals, string memory label) internal view returns (string memory) {
+        SolPretty.Config memory config = decConfig;
+        config.fixedDecimals = fixedDecimals;
+        return pp(value, config, label);
     }
 
-    function _pp5(uint256 value, uint256 fixedDecimals, string memory label) internal pure returns (string memory) {
-        return value.format(fixedDecimals).log(label);
-    }
 
+    // value, fixedDecimals, displayDecimals, label
     function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
         internal
         pure
         returns (string memory)
     {
-        return _pp6.castToPure()(value, fixedDecimals, displayDecimals, label);
+        return _pp2.castToPure()(value, fixedDecimals, displayDecimals, label);
     }
-
-    function _pp6(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
+    // value, fixedDecimals, displayDecimals,
+    function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
+        return _pp2.castToPure()(value, fixedDecimals, displayDecimals, "");
+    }
+    function _pp2(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
         internal
-        pure
+        view
         returns (string memory)
     {
-        return value.format(fixedDecimals, displayDecimals).log(label);
+        SolPretty.Config memory config = decConfig;
+        config.fixedDecimals = fixedDecimals;
+        config.displayDecimals = displayDecimals;
+        return pp(value, config, label);
     }
 
+
+    // value, fixedDecimals, displayDecimals, fixedWidth, label
     function pp(
         uint256 value,
         uint256 fixedDecimals,
@@ -261,88 +242,124 @@ contract SolPrettyTools {
         uint256 fixedWidth,
         string memory label
     ) internal pure returns (string memory) {
-        return _pp7.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, label);
+        return _pp3.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, label);
     }
-
-    function _pp7(
+    // value, fixedDecimals, displayDecimals, fixedWidth
+    function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
+        internal
+        pure
+        returns (string memory)
+    {
+        return _pp3.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, "");
+    }
+    function _pp3(
         uint256 value,
         uint256 fixedDecimals,
         uint256 displayDecimals,
         uint256 fixedWidth,
         string memory label
-    ) internal pure returns (string memory) {
-        return value.format(fixedDecimals, displayDecimals, fixedWidth).log(label);
+    ) internal view returns (string memory) {
+        SolPretty.Config memory config = decConfig;
+        config.fixedDecimals = fixedDecimals;
+        config.displayDecimals = displayDecimals;
+        config.fixedWidth = fixedWidth;
+        return pp(value, config, label);
     }
 
-    function pp(uint256 value, string memory label, SolPretty.Config memory config)
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                         INT                                 */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
+    // value, config, label
+    function pp(int256 value, SolPretty.Config memory config, string memory label) internal pure returns (string memory) {
+        return value.format(config).log(label, false);
+    }
+    // value, config, label
+    function pp(int256 value, SolPretty.Config memory config) internal pure returns (string memory) {
+        return pp(value, config, "");
+    }
+
+
+    // value, label
+    function pp(int256 value, string memory label) internal pure returns (string memory) {
+        return _ppi0.castToPure()(value, label);
+    }
+    // value
+    function pp(int256 value) internal pure returns (string memory) {
+        return _ppi0.castToPure()(value, "");
+    }
+    function _ppi0(int256 value, string memory label) internal view returns (string memory) {
+        SolPretty.Config memory config = decConfig;
+        return pp(value, config, label);
+    }
+
+
+    // value, fixedDecimals, label
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label) internal pure returns (string memory) {
+        return _pp2i.castToPure()(value, fixedDecimals, displayDecimals, label);
+    }
+    // value, fixedDecimals
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
+        return _pp2i.castToPure()(value, fixedDecimals, displayDecimals, "");
+    }
+    function _pp2i(int256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
         internal
-        pure
+        view
         returns (string memory)
     {
-        return value.format(config).log(label);
+        SolPretty.Config memory config = decConfig;
+        config.fixedDecimals = fixedDecimals;
+        config.displayDecimals = displayDecimals;
+        return pp(value, config, label);
     }
 
-    // log with no formatting at all
+    // value, fixedDecimals, displayDecimals, fixedWidth, label
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory label) internal pure returns (string memory) {
+        return _pp3i.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, label);
+    }
+    // value, fixedDecimals, displayDecimals, fixedWidth
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth) internal pure returns (string memory) {
+        return _pp3i.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, "");
+    }
+    function _pp3i(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory label)
+        internal
+        view
+        returns (string memory)
+    {
+        SolPretty.Config memory config = decConfig;
+        config.fixedDecimals = fixedDecimals;
+        config.displayDecimals = displayDecimals;
+        config.fixedWidth = fixedWidth;
+        return pp(value, config, label);
+    }
 
-    /// @dev pass false as second parameter to clear ALL formatting
+    // log with NO FORMATTING at all
+
+    // value, useFormatting, label
+    function pp(uint256 value, bool useFormatting, string memory label) internal pure returns (string memory) {
+        return _pp4.castToPure()(value, useFormatting, label);
+    }
+    // value, useFormatting
     function pp(uint256 value, bool useFormatting) internal pure returns (string memory) {
-        return pp(value, useFormatting, "");
+        return _pp4.castToPure()(value, useFormatting, "");
     }
-
-    function pp(uint256 value, bool useFormatting, uint256 fixedWidth) internal pure returns (string memory) {
-        return _pp8.castToPure()(value, useFormatting, fixedWidth);
-    }
-
-    function _pp8(uint256 value, bool useFormatting, uint256 fixedWidth) internal view returns (string memory) {
+    function _pp4(uint256 value, bool useFormatting, string memory label) internal view returns (string memory) {
+        SolPretty.Config memory config;
         if (useFormatting) {
-            SolPretty.Config memory config = decConfig;
-            config.fixedWidth = fixedWidth;
-            return value.format(config).log();
+            config = decConfig;
         } else {
-            SolPretty.Config memory config = SolPretty.getEmptyConfig();
+            config = SolPretty.getEmptyConfig();
             config.integerDelimiter = "";
             config.integerGroupingSize = 0;
-            config.fixedWidth = fixedWidth;
-            return value.format(config).log();
         }
+        return pp(value, config, label);
     }
 
-    function pp(uint256 value, bool useFormatting, string memory label) internal pure returns (string memory) {
-        return _pp9.castToPure()(value, useFormatting, label);
-    }
+    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+    /*                         BYTES32                             */
+    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    function _pp9(uint256 value, bool useFormatting, string memory label) internal view returns (string memory) {
-        if (useFormatting) {
-            return value.format(decConfig).log(label);
-        } else {
-            SolPretty.Config memory opts = SolPretty.getEmptyConfig();
-            opts.integerDelimiter = "";
-            opts.integerGroupingSize = 0;
-            return value.format(opts).log(label);
-        }
-    }
-
-    function pp(uint256 value, bool useFormatting, uint256 fixedWidth, string memory label)
-        internal
-        pure
-        returns (string memory)
-    {
-        return _ppa.castToPure()(value, useFormatting, fixedWidth, label);
-    }
-
-    function _ppa(uint256 value, bool useFormatting, uint256 fixedWidth, string memory label)
-        internal
-        pure
-        returns (string memory)
-    {
-        if (useFormatting) {
-            return value.format(18, 2, fixedWidth).log(label);
-        } else {
-            SolPretty.Config memory opts = SolPretty.getDefaultConfig();
-            opts.integerDelimiter = "";
-            opts.integerGroupingSize = 0;
-            opts.fixedWidth = fixedWidth;
-            return value.format(opts).log(label);
-        }
+    function pp(bytes32 value) internal pure returns (string memory) {
+        return SoladyStrings.toHexString(uint(value)).log();
     }
 }
