@@ -12,7 +12,18 @@ To install with [**Foundry**](https://github.com/gakonst/foundry):
 forge install devtooligan/solpretty
 ```
 
-## Usage
+## SolPretty Tools
+
+### Import and Inherit
+
+Your test contracts should import SolPrettyTools and have your contract inherit it.
+
+```solidity
+import "../src/SolPrettyTools.sol";
+
+contract MyContract is SolPrettyTools {}
+
+```
 
 ### pp
  - pp(uint256 value)
@@ -46,7 +57,7 @@ pp(123123123123, solPrettyOptions); // -> "      123 123*123123"
 struct SolPrettyOptions {
     uint256 fixedDecimals; //          default 0
     uint256 displayDecimals; //        default type(uint256).max
-    bytes1 decimalDelimter; //         default "."
+    bytes1 decimalDelimiter; //         default "."
     bytes1 fractionalDelimiter; //     default " "
     uint256 fractionalGroupingSize; // default 0
     bytes1 integerDelimiter; //        default ","
@@ -55,6 +66,10 @@ struct SolPrettyOptions {
 }
 
 ```
+TODO: Add divider and border
+
+
+## SolPretty Library - TODO: Finish this section
 
 ### concat
  - concat(string memory left, string memory right)
@@ -69,19 +84,5 @@ strings[1] = "b";
 strings[2] = "c";
 concat(strings); // -> "abc"
 
-```
-
-### log
- - log(string memory message)
- - log(string[] memory messages)
-
-```solidity
-using SolPretty for string;
-
-log("hoagies"); // console2.log("hoagies");
-pp(1234).log(); // console2.log("1,234")
-pp(1234).concat(" Alice's balance").log(); // console2.log("1,234 Alice's balance")
-
-```
 
 [solidity-shield]: https://img.shields.io/badge/solidity-%3E=0.8.4%20%3C=0.8.19-aa6746
