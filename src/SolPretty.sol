@@ -116,7 +116,7 @@ library SolPretty {
         bytes1 integerDelimiter; //        default ","
         uint256 integerGroupingSize; //    default 3
         uint256 fixedWidth; //             default 0 (automatic)
-        bytes1 decimalDelimter; //         default "." // ex. "." in U.S. and "," in Europe
+        bytes1 decimalDelimiter; //         default "." // ex. "." in U.S. and "," in Europe
         bool isNegative; //                default false
     }
 
@@ -131,7 +131,7 @@ library SolPretty {
             integerDelimiter: ",",
             integerGroupingSize: 3,
             fixedWidth: 0, // automatic
-            decimalDelimter: ".", // "." in U.S. and "," in Europe
+            decimalDelimiter: ".", // "." in U.S. and "," in Europe
             isNegative: false
         });
     }
@@ -145,7 +145,7 @@ library SolPretty {
             integerDelimiter: "",
             integerGroupingSize: 0,
             fixedWidth: 0,
-            decimalDelimter: "",
+            decimalDelimiter: "",
             isNegative: false
         });
     }
@@ -256,9 +256,9 @@ library SolPretty {
 
             // add one for decimal delimiter
             bytes1 decimalDelimiter;
-            if (adjustedDecimals > 0 && !isEmpty(opts.decimalDelimter)) {
+            if (adjustedDecimals > 0 && !isEmpty(opts.decimalDelimiter)) {
                 length += 1;
-                decimalDelimiter = opts.decimalDelimter;
+                decimalDelimiter = opts.decimalDelimiter;
             }
 
             // add one for negative sign
@@ -308,7 +308,7 @@ library SolPretty {
 
                 if (cursor == 0) {
                     // decimal delimiter
-                    if (!isEmpty(opts.decimalDelimter)) {
+                    if (!isEmpty(opts.decimalDelimiter)) {
                         assembly {
                             mstore8(ptr, byte(0, decimalDelimiter))
                             counter := add(counter, 1)

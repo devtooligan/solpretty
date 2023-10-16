@@ -59,7 +59,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 5, // if this is less than fixedDecimals, value will be truncated
-            decimalDelimter: ".",
+            decimalDelimiter: ".",
             fractionalDelimiter: " ",
             fractionalGroupingSize: 3,
             integerDelimiter: ",",
@@ -109,7 +109,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 10, // if this is less than fixedDecimals, value will be truncated
-            decimalDelimter: "X",
+            decimalDelimiter: "X",
             fractionalDelimiter: " ",
             fractionalGroupingSize: 4,
             integerDelimiter: "|",
@@ -126,7 +126,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 2,
             displayDecimals: 10, // if this is less than fixedDecimals, value will be truncated
-            decimalDelimter: "-",
+            decimalDelimiter: "-",
             fractionalDelimiter: " ",
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
@@ -143,7 +143,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory config = SolPretty.Config({
             fixedDecimals: 9,
             displayDecimals: 10,
-            decimalDelimter: "O",
+            decimalDelimiter: "O",
             fractionalDelimiter: "X",
             fractionalGroupingSize: 3,
             integerDelimiter: "",
@@ -173,7 +173,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory configWETH = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 4,
-            decimalDelimter: ".",
+            decimalDelimiter: ".",
             fractionalDelimiter: "",
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
@@ -192,7 +192,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory configWETH = SolPretty.Config({
             fixedDecimals: 18,
             displayDecimals: 4,
-            decimalDelimter: ".",
+            decimalDelimiter: ".",
             fractionalDelimiter: "",
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
@@ -204,7 +204,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         SolPretty.Config memory configUSDC = SolPretty.Config({
             fixedDecimals: 6,
             displayDecimals: 4,
-            decimalDelimter: ".",
+            decimalDelimiter: ".",
             fractionalDelimiter: "",
             fractionalGroupingSize: 0,
             integerDelimiter: ",",
@@ -328,9 +328,8 @@ contract SolPrettyTest is Test, SolPrettyTools {
         pp(body);
         pp();
         console.log("dividerSolady():");
-        pp();
         dividerSolady();
-        console.log("addBorderSolady()");
+        console.log("addBorderSolady():");
         pp();
         pp(addBorderSolady(body));
 
