@@ -65,14 +65,22 @@ library SolKawai { // SOLかわいい
         result = new string[](spaceAbove + spaceBelow + 1);
         uint256 counter;
         uint256 index;
-        for (index = 0; index < spaceAbove; index++) {
+        for (index = 0; index < spaceAbove;) {
             result[index] = "";
             counter++;
+
+            unchecked {
+                ++index;
+            }
         }
         result[counter] = symbol.fill(width);
-        for (index = 0; index < spaceBelow; index++) {
+        for (index = 0; index < spaceBelow;) {
             result[index] = "";
             counter++;
+
+            unchecked {
+                ++index;
+            }
         }
     }
 
@@ -94,18 +102,30 @@ library SolKawai { // SOLかわいい
         result = new string[](spaceAbove + spaceBelow + 2);
         uint256 counter;
         uint256 index;
-        for (index = 0; index < spaceAbove; index++) {
+        for (index = 0; index < spaceAbove;) {
             result[index] = "";
             counter++;
+
+            unchecked {
+                ++index;
+            }
         }
-        for (index = 0; index < symbols.length; index++) {
+        for (index = 0; index < symbols.length;) {
             result[counter] = symbols[index].fill(width);
             counter++;
+
+            unchecked {
+                ++index;
+            }
         }
 
-        for (index = 0; index < spaceBelow; index++) {
+        for (index = 0; index < spaceBelow;) {
             result[counter] = "";
             counter++;
+
+            unchecked {
+                ++index;
+            }
         }
 
     }
@@ -158,7 +178,7 @@ library SolKawai { // SOLかわいい
     {
         uint256 totalHeight = 2 * params.borderHeight + body.length + 2 + (bytes(params.title).length > 0 ? 2 : 0); // +2 for 1 line white space above and below;
         result = new string[](totalHeight);
-        uint256 currentIndex = 0;
+        uint256 currentIndex;
 
         // extend or shorten symbol for side border
         string memory sideBorder;
@@ -173,7 +193,10 @@ library SolKawai { // SOLかわいい
             for (uint256 i; i < params.borderHeight;) {
                 result[currentIndex] = params.symbol.fill(params.totalWidth);
                 currentIndex++;
-                i++;
+
+                unchecked {
+                    ++i;
+                }
             }
         }
 
@@ -203,12 +226,16 @@ library SolKawai { // SOLかわいい
         // add body
         {
             uint256 maxBodyWidth = params.totalWidth - (2 * params.borderWidth + 1);
-            for (uint256 i; i < body.length; i++) {
+            for (uint256 i; i < body.length;) {
                 require(bytes(body[i]).length <= maxBodyWidth, "SolKawai: body line is too long");
                 result[currentIndex] = sideBorder.space().concat(
                     body[i].addSpaces(maxBodyWidth - SoladyStrings.runeCount(body[i]))
                 ).concat(sideBorder);
                 currentIndex++;
+
+                unchecked {
+                    ++i;
+                }
             }
         }
         // add blank line
@@ -219,9 +246,13 @@ library SolKawai { // SOLかわいい
 
         // add bottom border
         {
-            for (uint256 i = 0; i < params.borderHeight; i++) {
+            for (uint256 i; i < params.borderHeight;) {
                 result[currentIndex] = params.symbol.fill(params.totalWidth);
                 currentIndex++;
+
+                unchecked {
+                    ++i;
+                }
             }
         }
     }
