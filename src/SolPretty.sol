@@ -3,101 +3,98 @@ pragma solidity ^0.8.0;
 
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-import {console, console2} from "forge-std/Test.sol";
 import {Unicode} from "./LibUnicode.sol";
 
 /**
-Do hex numbers
-deal with unicode - runecount?
-Do addresses like short hex
-
-
-need to have the following functions, everything else is built on top:
-
-struct Border {
-    string[] top;
-    string[] bottom;
-    string[] left;
-    string[] right;
-    uint256 widthInner;
-    uint256 heightInner;
-    string[] body;
-}
-- borders(BorderOpts memory opts)
-
-all the borders are so badass, SMILE, the christmas one, tripppy ones
-bear with board omg
-
-.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:.
-_."._."._."._."._."._."._."._."._."._."._."._."._."._."._."._
-=^..^=   =^..^=   =^..^=    =^..^=    =^..^=    =^..^=    =^..^=
-_,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,_
-_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_
-.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
-
-   \  :  /       \  :  /       \  :  /       \  :  /       \  :  /
-`. __/ \__ .' `. __/ \__ .' `. __/ \__ .' `. __/ \__ .' `. __/ \__ .'
-_ _\     /_ _ _ _\     /_ _ _ _\     /_ _ _ _\     /_ _ _ _\     /_ _
-   /_   _\       /_   _\       /_   _\       /_   _\       /_   _\
- .'  \ /  `.   .'  \ /  `.   .'  \ /  `.   .'  \ /  `.   .'  \ /  `.
-   /  |  \       /  :  \       /  :  \       /  :  \       /  |  \hjw
-   ______________________________
- / \                             \.
-|   |                            |.
- \_ |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |                            |.
-    |   _________________________|___
-    |  /                            /.
-    \_/dc__________________________/.
-
-
-
-/^(o.o)^\ /^(o.o)^\ /^(o.o)^\ /^(o.o)^\ /^(o.o)^\ /^(o.o)^\
-
-Art by Krogg
- .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.
-=`. .'==`. .'==`. .'==`. .'==`. .'==`. .'==`. .'==`. .'==`. .'=
-   "      "      "      "      "      "      "      "      "
-Art by Krogg
-      ....           ....           ....           ....
-     ||             ||             ||             ||
- /"""l|\        /"""l|\        /"""l|\        /"""l|\
-/_______\      /_______\      /_______\      /_______\
-|  .-.  |------|  .-.  |------|  .-.  |------|  .-.  |------
- __|L|__| .--. |__|L|__| .--. |__|L|__| .--. |__|L|__| .--.
-_\  \\p__`o-o'__\  \\p__`o-o'__\  \\p__`o-o'__\  \\p__`o-o'_
-------------------------------------------------------------
-
-               _._
-           __.{,_.).__
-        .-"           "-.
-      .'  __.........__  '.
-     /.-'`___.......___`'-.\
-    /_.-'` /   \ /   \ `'-._\
-    |     |   '/ \'   |     |
-    |      '-'     '-'      |
-    ;                       ;
-    _\         ___         /_
-   /  '.'-.__  ___  __.-'.'  \
- _/_    `'-..._____...-'`    _\_
-/   \           .           /   \
-\____)         .           (____/
-    \___________.___________/
-      \___________________/
-jgs  (_____________________)
-
+ * Do hex numbers
+ * deal with unicode - runecount?
+ * Do addresses like short hex
+ *
+ *
+ * need to have the following functions, everything else is built on top:
+ *
+ * struct Border {
+ *     string[] top;
+ *     string[] bottom;
+ *     string[] left;
+ *     string[] right;
+ *     uint256 widthInner;
+ *     uint256 heightInner;
+ *     string[] body;
+ * }
+ * - borders(BorderOpts memory opts)
+ *
+ * all the borders are so badass, SMILE, the christmas one, tripppy ones
+ * bear with board omg
+ *
+ * .:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:.
+ * _."._."._."._."._."._."._."._."._."._."._."._."._."._."._."._
+ * =^..^=   =^..^=   =^..^=    =^..^=    =^..^=    =^..^=    =^..^=
+ * _,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,_
+ * _/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_
+ * .oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.oOo.
+ *
+ *    \  :  /       \  :  /       \  :  /       \  :  /       \  :  /
+ * `. __/ \__ .' `. __/ \__ .' `. __/ \__ .' `. __/ \__ .' `. __/ \__ .'
+ * _ _\     /_ _ _ _\     /_ _ _ _\     /_ _ _ _\     /_ _ _ _\     /_ _
+ *    /_   _\       /_   _\       /_   _\       /_   _\       /_   _\
+ *  .'  \ /  `.   .'  \ /  `.   .'  \ /  `.   .'  \ /  `.   .'  \ /  `.
+ *    /  |  \       /  :  \       /  :  \       /  :  \       /  |  \hjw
+ *    ______________________________
+ *  / \                             \.
+ * |   |                            |.
+ *  \_ |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |                            |.
+ *     |   _________________________|___
+ *     |  /                            /.
+ *     \_/dc__________________________/.
+ *
+ *
+ *
+ * /^(o.o)^\ /^(o.o)^\ /^(o.o)^\ /^(o.o)^\ /^(o.o)^\ /^(o.o)^\
+ *
+ * Art by Krogg
+ *  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.  .-.-.
+ * =`. .'==`. .'==`. .'==`. .'==`. .'==`. .'==`. .'==`. .'==`. .'=
+ *    "      "      "      "      "      "      "      "      "
+ * Art by Krogg
+ *       ....           ....           ....           ....
+ *      ||             ||             ||             ||
+ *  /"""l|\        /"""l|\        /"""l|\        /"""l|\
+ * /_______\      /_______\      /_______\      /_______\
+ * |  .-.  |------|  .-.  |------|  .-.  |------|  .-.  |------
+ *  __|L|__| .--. |__|L|__| .--. |__|L|__| .--. |__|L|__| .--.
+ * _\  \\p__`o-o'__\  \\p__`o-o'__\  \\p__`o-o'__\  \\p__`o-o'_
+ * ------------------------------------------------------------
+ *
+ *                _._
+ *            __.{,_.).__
+ *         .-"           "-.
+ *       .'  __.........__  '.
+ *      /.-'`___.......___`'-.\
+ *     /_.-'` /   \ /   \ `'-._\
+ *     |     |   '/ \'   |     |
+ *     |      '-'     '-'      |
+ *     ;                       ;
+ *     _\         ___         /_
+ *    /  '.'-.__  ___  __.-'.'  \
+ *  _/_    `'-..._____...-'`    _\_
+ * /   \           .           /   \
+ * \____)         .           (____/
+ *     \___________.___________/
+ *       \___________________/
+ * jgs  (_____________________)
  */
-
 library SolPretty {
     using SoladyStrings for string;
     using Unicode for string;
@@ -107,6 +104,12 @@ library SolPretty {
     // ************************************************************************
 
     bytes16 constant SYMBOLS = "0123456789abcdef";
+
+    enum VerticalAlignment {
+        Bottom,
+        Center,
+        Top
+    }
 
     struct Config {
         uint256 fixedDecimals; //          default 0
@@ -118,6 +121,304 @@ library SolPretty {
         uint256 fixedWidth; //             default 0 (automatic)
         bytes1 decimalDelimiter; //         default "." // ex. "." in U.S. and "," in Europe
         bool isNegative; //                default false
+    }
+
+    struct Box {
+        uint256 width;
+        uint256 height;
+        string[] rows;
+    }
+
+    struct BorderBox {
+        BorderTiles tile;
+        uint256 topHeight;
+        uint256 bottomHeight;
+        uint256 leftWidth;
+        uint256 rightWidth;
+        Box data;
+    }
+
+    struct BorderTiles {
+        Box topLeft;
+        Box topCenter;
+        Box topRight;
+        Box middleLeft;
+        Box bottomLeft;
+        Box bottomCenter;
+        Box bottomRight;
+        Box middleRight;
+    }
+
+
+    // TODO: Seems like these convenience variants should go in Tools, maybe?
+    function createBorderBox(Box memory data, string memory symbol) internal pure returns (BorderBox memory result) {
+        return createBorderBox(data, symbol, 1, 1, 1, 1);
+    }
+
+    function createBorderBox(Box memory data, Box memory tile ) internal pure returns (BorderBox memory ) {
+        string[] memory renderedRows = rendered(tile);
+        uint height = renderedRows.length;
+        uint width = bytes(renderedRows[0]).length;
+        BorderTiles memory tiles = BorderTiles({
+            topLeft: tile,
+            topCenter: tile,
+            topRight: tile,
+            middleLeft: tile,
+            bottomLeft: tile,
+            bottomCenter: tile,
+            bottomRight: tile,
+            middleRight: tile
+        });
+        return createBorderBox(data, tiles, height, height, width, width);
+    }
+
+    function createBorderBox(
+        Box memory data,
+        Box memory tile,
+        uint256 topHeight,
+        uint256 bottomHeight,
+        uint256 leftWidth,
+        uint256 rightWidth
+    ) internal pure returns (BorderBox memory result) {
+        BorderTiles memory tiles = createBorderTiles(tile);
+
+        return createBorderBox(data, tiles, topHeight, bottomHeight, leftWidth, rightWidth);
+    }
+
+    function createBorderBox(
+        Box memory data,
+        Box memory tile,
+        uint256 horizontalBorderHeight, // top and bottom
+        uint256 verticalBorderWidth //     left and right
+    ) internal pure returns (BorderBox memory result) {
+        BorderTiles memory tiles = createBorderTiles(tile);
+
+        return createBorderBox(data, tiles, horizontalBorderHeight, horizontalBorderHeight, verticalBorderWidth, verticalBorderWidth);
+    }
+
+    function createBorderBox(
+        Box memory data,
+        string memory symbol,
+        uint256 topHeight,
+        uint256 bottomHeight,
+        uint256 leftWidth,
+        uint256 rightWidth
+    ) internal pure returns (BorderBox memory result) {
+        string[] memory rows = new string[](1);
+        rows[0] = symbol;
+        Box memory tile = Box({width: 1, height: 1, rows: rows});
+
+        BorderTiles memory tiles = createBorderTiles(tile);
+
+        return createBorderBox(data, tiles, topHeight, bottomHeight, leftWidth, rightWidth);
+    }
+
+    function createBorderBox(
+        Box memory data,
+        BorderTiles memory tiles,
+        uint256 topHeight,
+        uint256 bottomHeight,
+        uint256 leftWidth,
+        uint256 rightWidth
+    ) internal pure returns (BorderBox memory result) {
+        result = BorderBox({
+            tile: tiles,
+            topHeight: topHeight,
+            bottomHeight: bottomHeight,
+            leftWidth: leftWidth,
+            rightWidth: rightWidth,
+            data: data
+        });
+    }
+
+    function createBorderTiles(Box memory tile) internal pure returns (BorderTiles memory result) {
+        result = BorderTiles({
+            topLeft: tile,
+            topCenter: tile,
+            topRight: tile,
+            middleLeft: tile,
+            bottomLeft: tile,
+            bottomCenter: tile,
+            bottomRight: tile,
+            middleRight: tile
+        });
+    }
+
+    function rendered(BorderBox memory borderBox) internal pure returns (string[] memory fixedRows) {
+        return rendered(borderBox, VerticalAlignment.Center);
+    }
+
+    function rendered(BorderBox memory borderBox, VerticalAlignment verticalAlignment)
+        internal
+        pure
+        returns (string[] memory fixedRows)
+    {
+        Box memory top = Box({
+            width: borderBox.leftWidth + borderBox.data.width + borderBox.rightWidth,
+            height: borderBox.topHeight,
+            rows: concatBoxesToRows(
+                fill(borderBox.tile.topLeft, borderBox.leftWidth, borderBox.topHeight),
+                fill(borderBox.tile.topCenter, borderBox.data.width, borderBox.topHeight),
+                fill(borderBox.tile.topRight, borderBox.rightWidth, borderBox.topHeight),
+                borderBox.topHeight,
+                verticalAlignment
+                )
+        });
+        Box memory middle = Box({
+            width: borderBox.leftWidth + borderBox.data.width + borderBox.rightWidth,
+            height: borderBox.data.height,
+            rows: concatBoxesToRows(
+                fill(borderBox.tile.middleLeft, borderBox.leftWidth, borderBox.data.height),
+                borderBox.data,
+                fill(borderBox.tile.middleRight, borderBox.rightWidth, borderBox.data.height),
+                borderBox.data.height,
+                verticalAlignment
+                )
+        });
+        Box memory bottom = Box({
+            width: borderBox.leftWidth + borderBox.data.width + borderBox.rightWidth,
+            height: borderBox.bottomHeight,
+            rows: concatBoxesToRows(
+                fill(borderBox.tile.bottomLeft, borderBox.leftWidth, borderBox.bottomHeight),
+                fill(borderBox.tile.bottomCenter, borderBox.data.width, borderBox.bottomHeight),
+                fill(borderBox.tile.bottomRight, borderBox.rightWidth, borderBox.bottomHeight),
+                borderBox.bottomHeight,
+                verticalAlignment
+                )
+        });
+
+        fixedRows = new string[](top.height + middle.height + bottom.height);
+        for (uint256 i = 0; i < top.height; i++) {
+            fixedRows[i] = top.rows[i];
+        }
+        for (uint256 i = 0; i < middle.height; i++) {
+            fixedRows[i + top.height] = middle.rows[i];
+        }
+        for (uint256 i = 0; i < bottom.height; i++) {
+            fixedRows[i + top.height + middle.height] = bottom.rows[i];
+        }
+    }
+
+    function stackBoxes(Box memory a, Box memory b) internal pure returns (Box memory result) {
+        result = Box({
+            width: a.width > b.width ? a.width : b.width,
+            height: a.height + b.height,
+            rows: concatBoxesToRows(a, b, a.height + b.height, VerticalAlignment.Center)
+        });
+    }
+
+    // @param verticalAlignment 0 = bottom, 1 = center, 2 = top
+    function rendered(Box memory box) internal pure returns (string[] memory fixedRows) {
+        return rendered(box, VerticalAlignment.Center);
+    }
+
+    // @param verticalAlignment 0 = bottom, 1 = center, 2 = top
+    function rendered(Box memory box, VerticalAlignment verticalAlignment)
+        internal
+        pure
+        returns (string[] memory fixedRows)
+    {
+        // require(index <= box.height, "SolPretty.getBoxRow: index out of bounds");
+        fixedRows = new string[](box.height);
+
+        uint256 dataRowsHeight = box.height > box.rows.length ? box.rows.length : box.height;
+
+        uint256 topPaddedRows;
+        uint256 bottomPaddedRows;
+
+        uint256 heightDelta = box.height > dataRowsHeight ? box.height - dataRowsHeight : 0;
+        if (heightDelta > 0) {
+            if (verticalAlignment == VerticalAlignment.Bottom) {
+                topPaddedRows = heightDelta;
+            } else if (verticalAlignment == VerticalAlignment.Center) {
+                topPaddedRows = (box.height - dataRowsHeight) / 2;
+                bottomPaddedRows = box.height - dataRowsHeight - topPaddedRows;
+            } else {
+                bottomPaddedRows = box.height - dataRowsHeight;
+            }
+        }
+
+        if (topPaddedRows > 0) {
+            for (uint256 i = 0; i < topPaddedRows; i++) {
+                fixedRows[i] = spaces(box.width);
+            }
+        }
+
+        for (uint256 i = topPaddedRows; i < topPaddedRows + dataRowsHeight; i++) {
+            fixedRows[i] = fixLength(box.rows[i - topPaddedRows], box.width);
+        }
+
+        if (bottomPaddedRows > 0) {
+            for (uint256 i = topPaddedRows + dataRowsHeight; i < box.height; i++) {
+                fixedRows[i] = spaces(box.width);
+            }
+        }
+    }
+
+    function concat(Box memory a, Box memory b) internal pure returns (Box memory result) {
+        return concat(a, b, VerticalAlignment.Center, 0);
+    }
+
+    function concatWithSpace(Box memory a, Box memory b, uint8 buffer) internal pure returns (Box memory result) {
+        return concat(a, b, VerticalAlignment.Center, buffer);
+    }
+
+    function concat(Box memory a, Box memory b, VerticalAlignment verticalAlignment)
+        internal
+        pure
+        returns (Box memory result)
+    {
+        return concat(a, b, verticalAlignment, 0);
+    }
+
+    function emptyBox(uint256 width, uint256 height) internal pure returns (Box memory result) {
+        string[] memory emptyRows = new string[](height);
+        for (uint256 i = 0; i < height; i++) {
+            emptyRows[i] = spaces(width);
+        }
+        result = Box({width: width, height: height, rows: emptyRows});
+    }
+
+    function concat(Box memory a, Box memory b, VerticalAlignment verticalAlignment, uint256 buffer)
+        internal
+        pure
+        returns (Box memory result)
+    {
+        if (buffer > 0) {
+            a = concat(a, emptyBox(buffer, a.height));
+        }
+
+        uint256 height = a.height > b.height ? a.height : b.height;
+
+        result =
+            Box({width: a.width + b.width, height: height, rows: concatBoxesToRows(a, b, height, verticalAlignment)});
+    }
+
+    function concatBoxesToRows(
+        Box memory a,
+        Box memory b,
+        Box memory c,
+        uint256 height,
+        VerticalAlignment verticalAlignment
+    ) internal pure returns (string[] memory rows) {
+        Box memory ab = concat(a, b, verticalAlignment);
+        return concatBoxesToRows(ab, c, height, verticalAlignment);
+    }
+
+    function concatBoxesToRows(Box memory a, Box memory b, uint256 height, VerticalAlignment verticalAlignment)
+        internal
+        pure
+        returns (string[] memory rows)
+    {
+        string[] memory renderedA = rendered(Box({width: a.width, height: height, rows: a.rows}), verticalAlignment);
+
+        string[] memory renderedB = rendered(Box({width: b.width, height: height, rows: b.rows}), verticalAlignment);
+
+        rows = new string[](height);
+
+        for (uint256 i = 0; i < height; i++) {
+            rows[i] = renderedA[i].concat(renderedB[i]);
+        }
     }
 
     // DEFAULT Config ********************************************************
@@ -385,6 +686,17 @@ library SolPretty {
         return fill(text, " ", n);
     }
 
+    /// @dev returns a given box with a colulmn of spaces appended
+    function addSpaces(Box memory box, uint256 n) internal pure returns (Box memory) {
+        string[] memory renderedOldRows = rendered(box);
+
+        string[] memory newRows = new string[](box.height);
+        for (uint256 i = 0; i < box.height; i++) {
+            newRows[i] = renderedOldRows[i].concat(spaces(n));
+        }
+        return Box({width: box.width + n, height: box.height, rows: newRows});
+    }
+
     /// @dev wrapper around solady concat
     function concat(string memory a, string memory b) internal pure returns (string memory) {
         return SoladyStrings.concat(a, b);
@@ -406,9 +718,9 @@ library SolPretty {
     }
 
     function unicodeSlice(string memory str, uint256 start, uint256 end) internal pure returns (string memory result) {
-        uint charCursor = 0;
-        uint byteCursor = 0;
-        uint length = str.runeCount();
+        uint256 charCursor = 0;
+        uint256 byteCursor = 0;
+        uint256 length = str.runeCount();
         require(start < length, "SolPretty.unicodeSlice: start out of bounds");
         end = end > length ? length : end;
         string memory char;
@@ -422,18 +734,78 @@ library SolPretty {
         }
     }
 
+    // todo: horizontal alignment, for now we are left justifying by padding right
+    function fixLength(string memory str, uint256 length) internal pure returns (string memory) {
+        uint256 currentLength = bytes(str).length;
+        if (currentLength == length) {
+            return str;
+        }
+        if (currentLength > length) {
+            return shorten(str, length);
+        }
+        return pad(str, length);
+    }
+
     function shorten(string memory str, uint256 newLength) internal pure returns (string memory) {
         uint256 currentLength = bytes(str).length;
         require(newLength <= currentLength, "SolPretty.shorten: new length too long");
-        // assembly {
-        //     mstore(str, newLength) // overwrite the length, shortenining it
-        // }
-        // return str;
+
         if (str.isASCII()) {
             return str.slice(0, newLength);
         } else {
             return unicodeSlice(str, 0, newLength);
         }
+    }
+
+    function pad(Box memory box, uint256 horizontalPadding, uint256 verticalPadding) internal pure returns (Box memory result) {
+        uint unpaddedHeight = box.height;
+        box = Box({
+            width: box.width + 2 * horizontalPadding,
+            height: box.height + 2 * verticalPadding,
+            rows: rendered(box)
+        });
+        string[] memory newRows = new string[](box.height);
+        for (uint256 i = 0; i < verticalPadding; i++) {
+            newRows[i] = spaces(box.width);
+        }
+        for (uint256 i = verticalPadding; i < unpaddedHeight + verticalPadding; i++) {
+            newRows[i] = spaces(horizontalPadding).concat(box.rows[i - verticalPadding]).concat(spaces(horizontalPadding));
+        }
+        for (uint256 i = unpaddedHeight + verticalPadding; i < box.height; i++) {
+            newRows[i] = spaces(box.width);
+        }
+        result = Box({
+            width: box.width,
+            height: box.height,
+            rows: newRows
+        });
+    }
+
+    function pad(string memory str, uint256 width) internal pure returns (string memory) {
+        uint256 currentLength = bytes(str).length;
+        if (currentLength >= width) {
+            return str;
+        }
+        return str.concat(spaces(width - currentLength));
+    }
+
+    function fill(Box memory box, uint256 width, uint256 height) internal pure returns (Box memory result) {
+        string[] memory rows = rendered(box);
+
+        uint256 cappedHeight = height > box.height ? box.height : height;
+
+        string[] memory filledRows = new string[](height);
+        for (uint256 i = 0; i < cappedHeight; i++) {
+            filledRows[i] = fill(rows[i], width);
+        }
+
+        if (cappedHeight < height) {
+            for (uint256 i = cappedHeight; i < height; i++) {
+                filledRows[i] = fill(rows[i % cappedHeight], width);
+            }
+        }
+
+        result = Box({width: width, height: height, rows: filledRows});
     }
 
     function fill(string memory symbol, uint256 width) internal pure returns (string memory filled) {
@@ -457,38 +829,5 @@ library SolPretty {
             filled = filled.concat(shorten(symbol, part));
         }
         return prepend.concat(filled);
-    }
-
-    // ************************************************************************
-    // LibLog
-    // ************************************************************************
-
-    function logger(string memory message) internal pure returns (string memory) {
-        console2.log(message);
-        return message;
-    }
-
-    /// @dev returns self for composability
-    function log(string memory message) internal pure returns (string memory) {
-        return logger(message);
-    }
-
-    /// @dev by default adds a space between message and append
-    function log(string memory message, string memory append) internal pure returns (string memory) {
-        log(message, append, true);
-        return message;
-    }
-
-    /// @dev optional addSpace bool for adding/ommitting space between message and append
-    function log(string memory message, string memory append, bool addSpace) internal pure returns (string memory) {
-        return logger(addSpaces(message, addSpace ? 1 : 0).concat(append));
-    }
-
-    /// @dev log an array of strings
-    function log(string[] memory messages) internal pure returns (string[] memory) {
-        for (uint256 i = 0; i < messages.length; i++) {
-            log(messages[i]);
-        }
-        return messages;
     }
 }

@@ -16,7 +16,7 @@ forge install devtooligan/solpretty
 
 ### Import and Inherit
 
-Your test contracts should import SolPrettyTools and have your contract inherit it.
+Your test contracts should inherit SolPrettyTools.
 
 ```solidity
 import "../src/SolPrettyTools.sol";
@@ -31,14 +31,23 @@ contract MyContract is SolPrettyTools {}
  - pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals)
  - pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
  - pp(uint256 value, memory SolPrettyOptions)
+ - pp(uint256 value, bool useFormatting, string memory label)
+
 
 ```solidity
-import {pp} from "solpretty/solpretty.sol";
-
 pp(123123123123) //            -> "123,123,123,123" //  default
 pp(123123123123, 6) //         -> "123,123.123123" //   fixedDecimals = 6
 pp(123123123123, 6, 2) //      -> "123,123.12" //       displayDecimals = 2
 pp(123123123123, 6, 0, 15) //  -> "         123,123" // fixedWidth = 15
+
+// log with no formatting
+pp(123123123123, false) //     -> "123123123123" //      no formatting
+
+// labels can be optionally appended
+pp(123123123123, "myLabel") //            -> "123,123,123,123 myLabel"
+pp(123123123123, 6, 0, 15, "myLabel") //  -> "         123,123 myLabel"
+pp(123123123123, false, "myLabel") //     -> "123123123123 myLabel"
+
 ```
 
 Customizeable options:
@@ -57,7 +66,7 @@ pp(123123123123, solPrettyOptions); // -> "      123 123*123123"
 struct SolPrettyOptions {
     uint256 fixedDecimals; //          default 0
     uint256 displayDecimals; //        default type(uint256).max
-    bytes1 decimalDelimiter; //         default "."
+    bytes1 decimalDelimiter; //        default "."
     bytes1 fractionalDelimiter; //     default " "
     uint256 fractionalGroupingSize; // default 0
     bytes1 integerDelimiter; //        default ","

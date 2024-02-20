@@ -5,7 +5,6 @@ import {SolPretty} from "./SolPretty.sol";
 import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
-import {console2 as console} from "forge-std/Test.sol";
 /// @notice A library for graphics, borders, and other ascii art.
 /// @dev The functions in this returns an array of strings called "lines",
 /// where each element in the array is a line.
@@ -18,24 +17,38 @@ library SolKawai { // SOLかわいい
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 
-    /** dividers / section breaks / lines
+   function star() internal pure returns (SolPretty.Box memory tile) {
+        string[] memory tileRows = new string[](6);
+        tileRows[0] = "   \\  :  /";
+        tileRows[1] = "`. __/ \\__ .'";
+        tileRows[2] = "_ _\\     /_ _";
+        tileRows[3] = "   /_   _\\";
+        tileRows[4] = " .'  \\ /  `.";
+        tileRows[5] = "   /  |  \\";
+        tile = SolPretty.Box({width: 14, height: 6, rows: tileRows});
+    }
 
-        --------------------------------------------------------------------------------
-
-
-        _,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.-'~'-.,__,.
-
-
-        _/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\_/~\
-
-
-        .:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._
-
-
-        ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
-
-    */
-
+    function cartman() internal pure returns (SolPretty.Box memory tile) {
+        string[] memory tileRows = new string[](17);
+        tileRows[0] = "                _._";
+        tileRows[1] = "            __.{,_.).__";
+        tileRows[2] = '         .-"           "-.';
+        tileRows[3] = "       .'  __.........__  '.";
+        tileRows[4] = "      /.-'`___.......___`'-.\\";
+        tileRows[5] = "     /_.-'` /   \\ /   \\ `'-._\\";
+        tileRows[6] = "     |     |   '/ \\'   |     |";
+        tileRows[7] = "     |      '-'     '-'      |";
+        tileRows[8] = "     ;                       ;";
+        tileRows[9] = "     _\\         ___         /_";
+        tileRows[10] = "    /  '.'-.__  ___  __.-'.'  \\";
+        tileRows[11] = "  _/_    `'-..._____...-'`    _\\_";
+        tileRows[12] = " /   \\           .           /   \\";
+        tileRows[13] = " \\____)         .           (____/";
+        tileRows[14] = "     \\___________.___________/";
+        tileRows[15] = "       \\___________________/";
+        tileRows[16] = "      (_____________________)";
+        tile = SolPretty.Box({width: 34, height: 17, rows: tileRows});
+    }
     string constant singleLinePattern_00 = "_,.-'~'-.,_";
     string constant singleLinePattern_01 = "_/~\\";
     string constant singleLinePattern_02 = ".:*~*:._";
@@ -80,11 +93,6 @@ library SolKawai { // SOLかわいい
         return multiLineDivider(symbols, width, 1, 1);
     }
 
-    // function multiLineDividerUnicode(string[] memory symbols, uint256 width) internal pure returns (string[] memory result) {
-    //     return multiLineDivider(symbols, width, 1, 1, true);
-    // }
-
-    /// @dev once we figure out unicode we may not need separate functions. its really about the fill. can there be one fill that handles both?
     function multiLineDivider(string[] memory symbols, uint256 width, uint256 spaceAbove, uint256 spaceBelow)
         internal
         pure
@@ -108,121 +116,5 @@ library SolKawai { // SOLかわいい
             counter++;
         }
 
-    }
-
-
-
-    // borders
-    /**
-        *********************************
-        *                               *
-        *       Alice's balances        *
-        *                               *
-        *            1.87 USDT          *
-        *            0.08 WETH          *
-        *      122,828.75 DAI           *
-        *                               *
-        *********************************
-    */
-
-    struct Box {
-        string title; // "" to ommit
-        string symbol;
-        uint256 totalWidth;
-        uint256 borderWidth;
-        uint256 borderHeight;
-    }
-
-    function centered(string memory text, uint256 width) internal pure returns (string memory result) {
-        uint256 textLength = bytes(text).length;
-        require(textLength <= width, "SolKawai: text is too long");
-        uint256 leftPadding = Math.max(0, (width - textLength) / 2);
-        uint256 rightPadding = Math.max(0, width - textLength - leftPadding);
-        result = " ".fill(leftPadding).concat(text).concat(" ".fill(rightPadding));
-    }
-
-    function withBorder(string[] memory body, string memory symbol, uint256 totalWidth, string memory title)
-        internal
-        pure
-        returns (string[] memory result)
-    {
-        Box memory box = Box(title, symbol, totalWidth, 1, 1);
-        return withBorder(body, box);
-    }
-
-
-    function withBorder(string[] memory body, Box memory params)
-        internal
-        pure
-        returns (string[] memory result)
-    {
-        uint256 totalHeight = 2 * params.borderHeight + body.length + 2 + (bytes(params.title).length > 0 ? 2 : 0); // +2 for 1 line white space above and below;
-        result = new string[](totalHeight);
-        uint256 currentIndex = 0;
-
-        // extend or shorten symbol for side border
-        string memory sideBorder;
-        if (params.borderWidth >= bytes(params.symbol).length) {
-            sideBorder = params.symbol.fill(params.borderWidth);
-        } else {
-            sideBorder = SolPretty.shorten(params.symbol, params.borderWidth);
-        }
-
-        // add top border
-        {
-            for (uint256 i; i < params.borderHeight;) {
-                result[currentIndex] = params.symbol.fill(params.totalWidth);
-                currentIndex++;
-                i++;
-            }
-        }
-
-        // add blank line (with side borders)
-        result[currentIndex] = (
-            sideBorder.addSpaces(params.totalWidth - 2 * params.borderWidth)
-        ).concat(sideBorder);
-        currentIndex++;
-
-
-        // add title
-        {
-            if (bytes(params.title).length > 0) {
-                uint256 maxBodyWidth = params.totalWidth - (2 * params.borderWidth);
-                require(bytes(params.title).length <= maxBodyWidth, "SolKawai: title is too long");
-                result[currentIndex] = sideBorder.concat(centered(params.title, maxBodyWidth)).concat(sideBorder);
-                currentIndex++;
-
-                // add blank line
-                result[currentIndex] = (
-                    sideBorder.addSpaces(params.totalWidth - 2 * params.borderWidth)
-                ).concat(sideBorder);
-                currentIndex++;
-            }
-        }
-
-        // add body
-        {
-            uint256 maxBodyWidth = params.totalWidth - (2 * params.borderWidth + 1);
-            for (uint256 i; i < body.length; i++) {
-                require(bytes(body[i]).length <= maxBodyWidth, "SolKawai: body line is too long");
-                result[currentIndex] = sideBorder.space().concat(
-                    body[i].addSpaces(maxBodyWidth - SoladyStrings.runeCount(body[i]))
-                ).concat(sideBorder);
-                currentIndex++;
-            }
-        }
-        // add blank line
-        result[currentIndex] = (
-            sideBorder.addSpaces(params.totalWidth - 2 * params.borderWidth)
-        ).concat(sideBorder);
-        currentIndex++;
-
-        // add bottom border
-        {
-            for (uint256 i = 0; i < params.borderHeight; i++) {
-                result[currentIndex] = params.symbol.fill(params.totalWidth);
-                currentIndex++;
-            }
-        }
     }
 }
