@@ -4,13 +4,192 @@ pragma solidity ^0.8.19;
 import "./SolPretty.sol";
 import {SolKawai} from "./SolKawai.sol";
 import {LibFunctionCast} from "./LibFunctionCast.sol";
-import {console, console2} from "forge-std/Test.sol";
+import {console2} from "forge-std/Test.sol";
+import {LibString as SoladyStrings} from "solady/src/utils/LibString.sol";
 
-/// @dev Convenience functions to be used with SolPretty
+interface IERC20 {
+    function symbol() external view returns (string memory);
+    function balanceOf(address account) external view returns (uint256);
+    function totalSupply() external view returns (uint256);
+}
+
+library SolPrettyReporter {
+    using SolPretty for *;
+
+    struct ReportSection {
+        uint256 sectionIndex;
+        string title;
+        string[] data;
+        Checkpoint checkpoint;
+    }
+
+    struct Padding {
+        uint256 top;
+        uint256 right;
+        uint256 bottom;
+        uint256 left;
+    }
+
+    struct Checkpoint {
+        uint256 sectionIndex;
+        string title;
+        uint256[] ethBalances; // key is user address
+        uint256[] totalSupply; // same order as tokens
+        uint256[][] userBalances; // outer order is user order, inner is token order
+    }
+
+    struct Tracking {
+        TokenTracking[] tokens;
+        UserTracking[] users;
+    }
+
+    struct TokenTracking {
+        // TODO: Rename to TokenTracking
+        address token;
+        string name;
+    }
+
+    struct UserTracking {
+        address user;
+        string name;
+    }
+
+    function renderCheckpointsGrid(
+        ReportSection[] storage sections,
+        Tracking storage tracking,
+        SolPretty.Config memory config
+    ) internal view returns (string[] memory) {
+        uint256 height = 3 + (tracking.users.length * (tracking.tokens.length + 1)) + tracking.tokens.length + 1
+            + tracking.users.length + 1;
+        // console2.log("height", height);
+        // height = 30;
+        uint256 currentRow = 0;
+        string[] memory result = new string[](height);
+        result[currentRow++] = SolPretty.spaces(config.labelWidth + 1);
+        result[currentRow] = SolPretty.spaces(config.labelWidth + 1);
+        {
+            string memory title;
+            for (uint256 sectionIndex; sectionIndex < sections.length; sectionIndex++) {
+                ReportSection storage section = sections[sectionIndex];
+
+                if (bytes(section.title).length > 0) {
+                    title = " ".concat(section.title).fixLength(config.fixedWidth, 2);
+                } else {
+                    title = SolPretty.spaces(config.fixedWidth + 1);
+                }
+
+                result[currentRow] = result[currentRow].concat(title);
+            }
+            currentRow++;
+            result[currentRow++] = SolPretty.spaces(config.labelWidth + 1);
+        }
+
+        UserTracking storage user;
+        string memory userTokenCheckpoint;
+        uint256 balance;
+        for (uint256 userIndex; userIndex < tracking.users.length; userIndex++) {
+            user = tracking.users[userIndex];
+            for (uint256 tokenIndex; tokenIndex < tracking.tokens.length; tokenIndex++) {
+                TokenTracking storage token = tracking.tokens[tokenIndex];
+                result[currentRow] =
+                    (token.name.concat(".balanceOf(").concat(user.name).concat(")")).fixLength(config.labelWidth);
+                for (uint256 sectionIndex; sectionIndex < sections.length - 1; sectionIndex++) {
+                    ReportSection storage section = sections[sectionIndex];
+                    uint256[] storage balances = section.checkpoint.userBalances[tokenIndex];
+
+                    balance = section.checkpoint.userBalances[tokenIndex][userIndex];
+                    result[currentRow] = result[currentRow].concat(balance.format(config));
+                }
+                currentRow++;
+            }
+            result[currentRow++] = SolPretty.spaces(config.labelWidth + 1);
+        }
+
+        result[currentRow++] = SolPretty.spaces(config.labelWidth + 1);
+
+        for (uint256 userIndex; userIndex < tracking.users.length; userIndex++) {
+            user = tracking.users[userIndex];
+            userTokenCheckpoint = ("ETH balance (").concat(user.name.concat(") ")).fixLength(config.labelWidth);
+            for (uint256 sectionIndex; sectionIndex < sections.length - 1; sectionIndex++) {
+                ReportSection storage section = sections[sectionIndex];
+                userTokenCheckpoint =
+                    userTokenCheckpoint.concat(section.checkpoint.ethBalances[userIndex].format(config));
+            }
+            result[currentRow++] = userTokenCheckpoint;
+        }
+
+        result[currentRow++] = SolPretty.spaces(config.labelWidth + 1);
+
+        for (uint256 tokenIndex; tokenIndex < tracking.tokens.length; tokenIndex++) {
+            TokenTracking storage token = tracking.tokens[tokenIndex];
+            result[currentRow] = token.name.concat(".totalSupply()").fixLength(config.labelWidth);
+            for (uint256 sectionIndex; sectionIndex < sections.length - 1; sectionIndex++) {
+                ReportSection storage section = sections[sectionIndex];
+                result[currentRow] =
+                    result[currentRow].concat(section.checkpoint.totalSupply[tokenIndex].format(config));
+            }
+            currentRow++;
+        }
+
+        return result;
+    }
+
+    function emptyCheckpoint() internal pure returns (Checkpoint memory) {
+        return Checkpoint({
+            sectionIndex: 0,
+            title: "",
+            ethBalances: new uint256[](0),
+            userBalances: new uint256[][](0),
+            totalSupply: new uint256[](0)
+        });
+    }
+
+    function newReportSection(ReportSection[] storage reportSections, string memory title) internal {
+        reportSections.push(
+            SolPrettyReporter.ReportSection({
+                title: title,
+                data: new string[](0),
+                sectionIndex: reportSections.length,
+                checkpoint: emptyCheckpoint()
+            })
+        );
+    }
+
+    function log(ReportSection[] storage reportSections, string memory message) internal {
+        reportSections[reportSections.length - 1].data.push(message);
+    }
+
+    function setSectionTitle(ReportSection[] storage reportSections, string memory title) internal {
+        reportSections[reportSections.length - 1].title = title;
+    }
+
+    function checkpoint(ReportSection[] storage reportSections, Tracking storage tracking) internal {
+        checkpoint(reportSections[reportSections.length - 1], tracking);
+    }
+
+    function checkpoint(ReportSection storage section, Tracking storage tracking) internal {
+        delete section.checkpoint;
+        section.checkpoint.sectionIndex = section.sectionIndex;
+        section.checkpoint.title = section.title;
+        for (uint256 i = 0; i < tracking.users.length; i++) {
+            section.checkpoint.ethBalances.push(tracking.users[i].user.balance);
+        }
+        for (uint256 i = 0; i < tracking.tokens.length; i++) {
+            section.checkpoint.totalSupply.push(IERC20(tracking.tokens[i].token).totalSupply());
+            uint256[] memory balances = new uint256[](tracking.users.length);
+            for (uint256 j = 0; j < tracking.users.length; j++) {
+                balances[j] = IERC20(tracking.tokens[i].token).balanceOf(tracking.users[j].user);
+            }
+            section.checkpoint.userBalances.push(balances);
+        }
+    }
+}
+
 contract SolPrettyTools {
     using SolPretty for *;
     using SolKawai for *;
     using LibFunctionCast for *;
+    using SolPrettyReporter for *;
 
     struct SolPrettyToolsConfig {
         uint256 width;
@@ -19,21 +198,15 @@ contract SolPrettyTools {
         SolPretty.VerticalAlignment boxVerticalAlignment;
     }
 
-    bool tableLoggingEnabled = false;
-    bool consoleLoggingEnabled = true;
-    bool console2LoggingEnabled = false;
-
     SolPrettyToolsConfig public toolsConfig; // configuration of this SolPrettyTools contract
-
     SolPretty.Config public decimalsFormat; // default configuration to use with decimal numbers
 
-    string public currentTable;
-    mapping(string => string[]) public tables;
-
+    SolPrettyReporter.ReportSection[] _report;
+    SolPrettyReporter.Padding _reportPadding;
 
     constructor() {
-
-        // load default dividers
+        // load default dividers // TODO: Move to a separate function
+        // TODO: These should be tile boxes?
         string[] memory singleDividerSymbols = new string[](4);
         singleDividerSymbols[0] = "*";
         singleDividerSymbols[1] = SolKawai.singleLinePattern_00; // "_,.-'~'-.,_"
@@ -45,19 +218,128 @@ contract SolPrettyTools {
         multiDividerSymbols[0][0] = SolKawai.multiLinePattern_00_1of2; // "     .-."
         multiDividerSymbols[0][1] = SolKawai.multiLinePattern_00_2of2; // "`._.'   "
 
+        // TODO: Move to a separate function
+        // set configuration
         toolsConfig = SolPrettyToolsConfig({
             width: 80,
             singleDividerSymbols: singleDividerSymbols,
             multiDividerSymbols: multiDividerSymbols,
             boxVerticalAlignment: SolPretty.VerticalAlignment.Center
         });
-
         decimalsFormat = SolPretty.getDefaultConfig();
 
-        currentTable = "default";
+        _reportPadding = SolPrettyReporter.Padding({top: 2, right: 2, bottom: 2, left: 2});
+
+        newReportSection(); // create default section (section 0)
     }
 
-    function setBoxVerticalAlignment(uint boxVerticalAlignment) public {
+    SolPrettyReporter.Tracking tracking;
+
+    function trackTokens(address[] memory tokens) public {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            trackToken(tokens[i]);
+        }
+    }
+
+    function trackTokens(address token0, address token1) public {
+        trackToken(token0);
+        trackToken(token1);
+    }
+
+    function trackTokens(address token0, address token1, address token2) public {
+        trackToken(token0);
+        trackToken(token1);
+        trackToken(token2);
+    }
+
+    function trackTokens(SolPrettyReporter.TokenTracking[] memory tokens) public {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            trackToken(tokens[i]);
+        }
+    }
+
+    function trackToken(address token) public {
+        trackToken(SolPrettyReporter.TokenTracking(token, IERC20(token).symbol()));
+    }
+
+    function trackToken(SolPrettyReporter.TokenTracking memory token) public {
+        tracking.tokens.push(token);
+    }
+
+    function trackUser(SolPrettyReporter.UserTracking memory user) public {
+        tracking.users.push(SolPrettyReporter.UserTracking({user: user.user, name: user.name}));
+    }
+
+    function trackUser(address user) public {
+        uint256 count = tracking.users.length + 1;
+        string memory name = "User".concat(SoladyStrings.toString(count));
+        trackUser(SolPrettyReporter.UserTracking(user, name));
+    }
+
+    function trackUser(address user, string memory name) public {
+        trackUser(SolPrettyReporter.UserTracking(user, name));
+    }
+
+    function checkpoint(string memory title) public {
+        setSectionTitle(title);
+        checkpoint();
+    }
+
+    // automatically advances to new section
+    // uses storage as scratch space for dynamic array features
+    function checkpoint() public {
+        _report.checkpoint(tracking);
+        newReportSection();
+    }
+
+    function setSectionTitle(string memory title) public {
+        _report.setSectionTitle(title);
+    }
+
+    function newReportSection() public {
+        newReportSection("");
+    }
+
+    function newReportSection(string memory title) public {
+        _report.newReportSection(title);
+    }
+
+    function reporter(string memory message) internal returns (string memory) {
+        _report.log(message);
+        return message;
+    }
+
+    /// @dev returns self for composability
+    function report(string memory message) internal returns (string memory) {
+        return reporter(message);
+    }
+
+    /// @dev by default adds a space between message and append
+    function report(string memory message, string memory append) internal returns (string memory) {
+        if (bytes(append).length > 0) {
+            return report(message, append, true);
+        }
+        return report(message);
+    }
+
+    /// @dev optional addSpace bool for adding/ommitting space between message and append
+    function report(string memory message, string memory append, bool addSpace) internal returns (string memory) {
+        return reporter(message.addSpaces(addSpace ? 1 : 0).concat(append));
+    }
+
+    /// @dev log an array of strings
+    function report(string[] memory messages) internal returns (string[] memory) {
+        for (uint256 i = 0; i < messages.length; i++) {
+            report(messages[i]);
+        }
+        return messages;
+    }
+
+    function renderCheckpointsGrid() public view returns (string[] memory) {
+        return _report.renderCheckpointsGrid(tracking, decimalsFormat.toMemory());
+    }
+
+    function setBoxVerticalAlignment(uint256 boxVerticalAlignment) public {
         toolsConfig.boxVerticalAlignment = SolPretty.VerticalAlignment(boxVerticalAlignment);
     }
 
@@ -65,45 +347,30 @@ contract SolPrettyTools {
         toolsConfig.width = width_;
     }
 
+    function setDecimalsFormatFixedWidth(uint256 width_) public {
+        decimalsFormat.fixedWidth = width_;
+    }
+
+    // TODO: Need to incorporate this in all pp commands
+    function setDecimalsFormatLabelWidth(uint256 width_) public {
+        decimalsFormat.labelWidth = width_;
+    }
+
     function setToolsConfig(SolPrettyToolsConfig memory toolsConfig_) public {
         toolsConfig = toolsConfig_;
     }
 
-    function setFormatdecimalsFormat(SolPretty.Config memory decimalsFormat_) public {
+    function setDecimalsFormat(SolPretty.Config memory decimalsFormat_) public {
         decimalsFormat = decimalsFormat_;
-    }
-
-    function enableLogConsole() public {
-        consoleLoggingEnabled = true;
-    }
-    function enableLogConsole(bool enabled) public {
-        consoleLoggingEnabled = enabled;
-    }
-
-    function enableLogConsole2() public {
-        console2LoggingEnabled = true;
-    }
-    function enableLogConsole2(bool enabled) public {
-        console2LoggingEnabled = enabled;
-    }
-
-    function enableLogTable() public {
-        tableLoggingEnabled = true;
-    }
-    function enableLogTable(bool enabled) public {
-        tableLoggingEnabled = enabled;
-    }
-    function setTable(string memory name) public {
-        currentTable = name;
-
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                         GRAPHICS                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /**            dividers / section breaks / lines */
-
+    /**
+     * dividers / section breaks / lines
+     */
 
     /// @dev logs a divider line
     function divider() internal view returns (string[] memory) {
@@ -124,12 +391,13 @@ contract SolPrettyTools {
         symbols[1] = toolsConfig.multiDividerSymbols[0][1];
         return symbols.multiLineDivider(toolsConfig.width);
     }
+
     function dividerMulti(string[] memory symbols) internal view returns (string[] memory) {
         return symbols.multiLineDivider(toolsConfig.width);
     }
 
     function dividerSolady() internal view returns (string[] memory) {
-        string memory div =  SolKawai.solady_divider;
+        string memory div = SolKawai.solady_divider;
         return divider(div);
     }
 
@@ -172,9 +440,8 @@ contract SolPrettyTools {
     //     return body.withBorder(params);
     // }
 
-
     // ************************************************************************
-    // LibLog
+    // Logging
     // ************************************************************************
 
     function logger(string memory message) internal pure returns (string memory) {
@@ -193,7 +460,6 @@ contract SolPrettyTools {
             return loggit(message, append, true);
         }
         return loggit(message);
-
     }
 
     /// @dev optional addSpace bool for adding/ommitting space between message and append
@@ -208,7 +474,6 @@ contract SolPrettyTools {
         }
         return messages;
     }
-
 
     /**
      *
@@ -265,7 +530,11 @@ contract SolPrettyTools {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     // value, config, label
-    function pp(uint256 value, SolPretty.Config memory config, string memory label) internal pure returns (string memory) {
+    function pp(uint256 value, SolPretty.Config memory config, string memory label)
+        internal
+        pure
+        returns (string memory)
+    {
         return loggit(value.format(config), label);
     }
 
@@ -274,34 +543,35 @@ contract SolPrettyTools {
         return pp(value, config, "");
     }
 
-
     // value, label
     function pp(uint256 value, string memory label) internal pure returns (string memory) {
         return _pp0.castToPure()(value, label);
     }
     //value
+
     function pp(uint256 value) internal pure returns (string memory) {
         return _pp0.castToPure()(value, "");
     }
+
     function _pp0(uint256 value, string memory label) internal view returns (string memory) {
         return pp(value, decimalsFormat, label);
     }
-
 
     // value, fixedDecimals, label
     function pp(uint256 value, uint256 fixedDecimals, string memory label) internal pure returns (string memory) {
         return _pp1.castToPure()(value, fixedDecimals, label);
     }
     // value, fixedDecimals
+
     function pp(uint256 value, uint256 fixedDecimals) internal pure returns (string memory) {
         return _pp1.castToPure()(value, fixedDecimals, "");
     }
+
     function _pp1(uint256 value, uint256 fixedDecimals, string memory label) internal view returns (string memory) {
         SolPretty.Config memory config = decimalsFormat;
         config.fixedDecimals = fixedDecimals;
         return pp(value, config, label);
     }
-
 
     // value, fixedDecimals, displayDecimals, label
     function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
@@ -312,9 +582,11 @@ contract SolPrettyTools {
         return _pp2.castToPure()(value, fixedDecimals, displayDecimals, label);
     }
     // value, fixedDecimals, displayDecimals,
+
     function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
         return _pp2.castToPure()(value, fixedDecimals, displayDecimals, "");
     }
+
     function _pp2(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
         internal
         view
@@ -326,18 +598,16 @@ contract SolPrettyTools {
         return pp(value, config, label);
     }
 
-
     // value, fixedDecimals, displayDecimals, fixedWidth, label
-    function pp(
-        uint256 value,
-        uint256 fixedDecimals,
-        uint256 displayDecimals,
-        uint256 fixedWidth,
-        string memory label
-    ) internal pure returns (string memory) {
+    function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory label)
+        internal
+        pure
+        returns (string memory)
+    {
         return _pp3.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, label);
     }
     // value, fixedDecimals, displayDecimals, fixedWidth
+
     function pp(uint256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
         internal
         pure
@@ -345,6 +615,7 @@ contract SolPrettyTools {
     {
         return _pp3.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, "");
     }
+
     function _pp3(
         uint256 value,
         uint256 fixedDecimals,
@@ -364,37 +635,48 @@ contract SolPrettyTools {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     // value, config, label
-    function pp(int256 value, SolPretty.Config memory config, string memory label) internal pure returns (string memory) {
+    function pp(int256 value, SolPretty.Config memory config, string memory label)
+        internal
+        pure
+        returns (string memory)
+    {
         return loggit(value.format(config), label);
     }
     // value, config, label
+
     function pp(int256 value, SolPretty.Config memory config) internal pure returns (string memory) {
         return pp(value, config, "");
     }
-
 
     // value, label
     function pp(int256 value, string memory label) internal pure returns (string memory) {
         return _ppi0.castToPure()(value, label);
     }
     // value
+
     function pp(int256 value) internal pure returns (string memory) {
         return _ppi0.castToPure()(value, "");
     }
+
     function _ppi0(int256 value, string memory label) internal view returns (string memory) {
         SolPretty.Config memory config = decimalsFormat;
         return pp(value, config, label);
     }
 
-
     // value, fixedDecimals, label
-    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label) internal pure returns (string memory) {
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
+        internal
+        pure
+        returns (string memory)
+    {
         return _pp2i.castToPure()(value, fixedDecimals, displayDecimals, label);
     }
     // value, fixedDecimals
+
     function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals) internal pure returns (string memory) {
         return _pp2i.castToPure()(value, fixedDecimals, displayDecimals, "");
     }
+
     function _pp2i(int256 value, uint256 fixedDecimals, uint256 displayDecimals, string memory label)
         internal
         view
@@ -407,18 +689,30 @@ contract SolPrettyTools {
     }
 
     // value, fixedDecimals, displayDecimals, fixedWidth, label
-    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory label) internal pure returns (string memory) {
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory label)
+        internal
+        pure
+        returns (string memory)
+    {
         return _pp3i.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, label);
     }
     // value, fixedDecimals, displayDecimals, fixedWidth
-    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth) internal pure returns (string memory) {
-        return _pp3i.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, "");
-    }
-    function _pp3i(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth, string memory label)
+
+    function pp(int256 value, uint256 fixedDecimals, uint256 displayDecimals, uint256 fixedWidth)
         internal
-        view
+        pure
         returns (string memory)
     {
+        return _pp3i.castToPure()(value, fixedDecimals, displayDecimals, fixedWidth, "");
+    }
+
+    function _pp3i(
+        int256 value,
+        uint256 fixedDecimals,
+        uint256 displayDecimals,
+        uint256 fixedWidth,
+        string memory label
+    ) internal view returns (string memory) {
         SolPretty.Config memory config = decimalsFormat;
         config.fixedDecimals = fixedDecimals;
         config.displayDecimals = displayDecimals;
@@ -433,9 +727,11 @@ contract SolPrettyTools {
         return _pp4.castToPure()(value, useFormatting, label);
     }
     // value, useFormatting
+
     function pp(uint256 value, bool useFormatting) internal pure returns (string memory) {
         return _pp4.castToPure()(value, useFormatting, "");
     }
+
     function _pp4(uint256 value, bool useFormatting, string memory label) internal view returns (string memory) {
         SolPretty.Config memory config;
         if (useFormatting) {
@@ -453,14 +749,12 @@ contract SolPrettyTools {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     function pp(bytes32 value) internal pure returns (string memory) {
-        return loggit(SoladyStrings.toHexString(uint(value)));
+        return loggit(SoladyStrings.toHexString(uint256(value)));
     }
-
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                      SolPretty.Box                          */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
 
     // use boxVerticalAlignment from toolsConfig
     function pp(SolPretty.Box memory box) internal pure returns (string[] memory) {
@@ -468,7 +762,7 @@ contract SolPrettyTools {
     }
 
     // manually select boxVerticalAlignment
-    function pp(SolPretty.Box memory box, uint boxVerticalAlignment) internal pure returns (string[] memory) {
+    function pp(SolPretty.Box memory box, uint256 boxVerticalAlignment) internal pure returns (string[] memory) {
         return _pp6.castToPure()(box, boxVerticalAlignment);
     }
 
@@ -476,10 +770,8 @@ contract SolPrettyTools {
         return loggit(box.rendered(toolsConfig.boxVerticalAlignment));
     }
 
-    function _pp6(SolPretty.Box memory box, uint boxVerticalAlignment) internal view returns (string[] memory) {
+    function _pp6(SolPretty.Box memory box, uint256 boxVerticalAlignment) internal view returns (string[] memory) {
         SolPretty.VerticalAlignment verticalAlignment = SolPretty.VerticalAlignment(boxVerticalAlignment);
         return loggit(box.rendered(verticalAlignment));
     }
-
-
 }

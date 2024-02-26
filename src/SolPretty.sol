@@ -112,6 +112,7 @@ library SolPretty {
     }
 
     struct Config {
+        uint256 labelWidth; //             default 0 (automatic)
         uint256 fixedDecimals; //          default 0
         uint256 displayDecimals; //        default type(uint256).max
         bytes1 fractionalDelimiter; //     default " "
@@ -123,10 +124,43 @@ library SolPretty {
         bool isNegative; //                default false
     }
 
+    function toMemory(Config storage config) internal view returns (Config memory) {
+        return Config({
+                labelWidth: config.labelWidth,
+                fixedDecimals: config.fixedDecimals,
+                displayDecimals: config.displayDecimals,
+                fractionalDelimiter: config.fractionalDelimiter,
+                fractionalGroupingSize: config.fractionalGroupingSize,
+                integerDelimiter: config.integerDelimiter,
+                integerGroupingSize: config.integerGroupingSize,
+                fixedWidth: config.fixedWidth,
+                decimalDelimiter: config.decimalDelimiter,
+                isNegative: config.isNegative
+            });
+    }
+
     struct Box {
         uint256 width;
         uint256 height;
         string[] rows;
+    }
+
+    function createBox(string[] memory rows) internal pure returns (Box memory result) {
+        uint256 width = 0;
+        for (uint256 i = 0; i < rows.length; i++) {
+            if (bytes(rows[i]).length > width) {
+                width = bytes(rows[i]).length;
+            }
+        }
+        result = Box({width: width, height: rows.length, rows: rows});
+    }
+
+    // pads all rows with spaces on both sides
+    function hpadRows(string[] memory rows, uint256 padding) internal pure returns (string[] memory newRows) {
+        newRows = new string[](rows.length);
+        for (uint256 i = 0; i < rows.length; i++) {
+            newRows[i] = spaces(padding).concat(rows[i]).concat(spaces(padding));
+        }
     }
 
     struct BorderBox {
@@ -425,13 +459,14 @@ library SolPretty {
 
     function getDefaultConfig() internal pure returns (Config memory config) {
         config = Config({
-            fixedDecimals: 0, // defaults to zero decimal places
-            displayDecimals: type(uint256).max, // if this is less than fixedDecimals, value will be truncated
+            labelWidth: 25,
+            fixedDecimals: 18, // defaults to zero decimal places
+            displayDecimals: 2, // if this is less than fixedDecimals, value will be truncated
             fractionalDelimiter: " ",
             fractionalGroupingSize: 0, // fractional (right side of decimal) grouping disabled by default
             integerDelimiter: ",",
             integerGroupingSize: 3,
-            fixedWidth: 0, // automatic
+            fixedWidth: 25,
             decimalDelimiter: ".", // "." in U.S. and "," in Europe
             isNegative: false
         });
@@ -439,6 +474,7 @@ library SolPretty {
 
     function getEmptyConfig() internal pure returns (Config memory config) {
         config = Config({
+            labelWidth: 0,
             fixedDecimals: 0,
             displayDecimals: type(uint256).max,
             fractionalDelimiter: " ",
@@ -734,8 +770,13 @@ library SolPretty {
         }
     }
 
-    // todo: horizontal alignment, for now we are left justifying by padding right
     function fixLength(string memory str, uint256 length) internal pure returns (string memory) {
+        return fixLength(str, length, 0);
+    }
+
+
+    // alignment 0 = left, 1 = center, 2 = right
+    function fixLength(string memory str, uint256 length, uint alignment) internal pure returns (string memory) {
         uint256 currentLength = bytes(str).length;
         if (currentLength == length) {
             return str;
@@ -743,7 +784,19 @@ library SolPretty {
         if (currentLength > length) {
             return shorten(str, length);
         }
-        return pad(str, length);
+
+        if (alignment == 0) {
+            return pad(str, length);
+        } else if (alignment == 1) {
+            uint256 padding = (length - currentLength) / 2;
+            return pad(spaces(padding).concat(str), length);
+        } else if (alignment == 2) {
+            uint256 padding = (length - currentLength);
+            return spaces(padding).concat(str);
+        } else {
+            revert("SolPretty.fixLength: invalid alignment");
+        }
+
     }
 
     function shorten(string memory str, uint256 newLength) internal pure returns (string memory) {

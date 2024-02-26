@@ -5,23 +5,142 @@ import {Test, console2} from "forge-std/Test.sol";
 import {Unicode} from "../src/LibUnicode.sol";
 import "../src/SolPretty.sol";
 import "../src/SolPrettyTools.sol";
+import {ERC20 as ERC20OZ} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
+contract ERC20 is ERC20OZ {
+
+    constructor(string memory name_, string memory symbol_) ERC20OZ(name_, symbol_) {}
+    function mint(address to, uint256 amount) public {
+        _mint(to, amount);
+    }
+
+    function transferAdmin(address from, address to, uint256 amount) public {
+        _transfer(from, to, amount);
+    }
+
+}
+contract Pool is ERC20OZ {
+
+    address public pool;
+    address public token0;
+    address public token1;
+
+    constructor(string memory name_, string memory symbol_,address token0_, address token1_) ERC20OZ(name_, symbol_) {
+        token0 = token0_;
+        token1 = token1_;
+
+    }
+    function mint(address to, uint256 amount) public {
+        _mint(to, amount);
+    }
+
+
+    function deposit(address to, uint256 amount) public {
+        ERC20(token0).transferAdmin(to, address(this), amount);
+        ERC20(token1).transferAdmin(to, address(this), amount);
+        _mint(to, amount + amount/2);
+    }
+
+    function withdraw(address to, uint256 amount) public {
+        ERC20(token0).transferAdmin(address(this), to, amount);
+        ERC20(token1).transferAdmin(address(this), to, amount/2);
+        _burn(to, amount);
+    }
+
+}
 contract SolPrettyTest is Test, SolPrettyTools {
     using SolPretty for *;
+    using SolPrettyReporter for *;
     using SolKawai for *;
     using Unicode for *;
 
-    function setUp() public {}
 
-    // TODO:
+    address public constant alice = address(0x123);
+    address public constant bob = address(0x456);
+    address public constant eve = address(0xabc);
 
-    //  - Do some tests for Box of different sizes and alignments along with concat
-    //  - borderBox is 6 boxes. There are 4 corners plus top, bottom, left and right
-    //  - borderBox can be used to create a border around a box
-    //  - Should Box be a custom type?
+    Pool public pool;
+    address public token0;
+    address public token1;
+
+    function setupUsers() public {
+        token0 = address(new ERC20("Test", "DAI"));
+        token1 = address(new ERC20("Test", "WETH"));
+        pool = new Pool("Test", "LP", token0, token1);
+        uint initialTokenAmount = 100 ether;
+        deal(address(token0), alice, initialTokenAmount);
+        deal(address(token0), bob, initialTokenAmount);
+        deal(address(token0), eve, initialTokenAmount);
+
+        deal(address(token1), alice, initialTokenAmount / 2);
+        deal(address(token1), bob, initialTokenAmount / 2);
+        deal(address(token1), eve, initialTokenAmount / 2);
+        uint aliceEtherAmount = 100 ether;
+        vm.deal(alice, aliceEtherAmount);
+
+        vm.startPrank(alice);
+        ERC20(token0).approve(address(pool), type(uint).max);
+        ERC20(token1).approve(address(pool), type(uint).max);
+        pool.approve(address(pool), type(uint).max);
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+        ERC20(token0).approve(address(pool), type(uint).max);
+        ERC20(token1).approve(address(pool), type(uint).max);
+        pool.approve(address(pool), type(uint).max);
+        vm.stopPrank();
+
+        vm.startPrank(eve);
+        ERC20(token0).approve(address(pool), type(uint).max);
+        ERC20(token1).approve(address(pool), type(uint).max);
+        pool.approve(address(pool), type(uint).max);
+        vm.stopPrank();
+
+        setDecimalsFormatFixedWidth(15);
+        setDecimalsFormatLabelWidth(20);
+    }
+
+    function hack() public {
+        vm.startPrank(address(pool));
+        ERC20(token0).transferAdmin(address(pool), address(eve), ERC20(token0).balanceOf(address(pool)));
+        ERC20(token1).transferAdmin(address(pool), address(eve), ERC20(token1).balanceOf(address(pool)));
+        vm.stopPrank();
+    }
+
+    function setUp() public {
+        setupUsers();
+
+        // SolPretty tracking setup
+        trackUser(alice, "Alice");
+        trackUser(bob, "Bob");
+        trackUser(eve, "Eve");
+        trackUser(address(pool), "Pool");
+        trackTokens(token0, token1, address(pool));
+
+        // SolPretty initial checkpoint
+        checkpoint("Start");
+    }
+
+    function testHack() public {
+        pool.deposit(alice, 1 ether);
+        checkpoint("Alice deposit");
+
+        pool.deposit(bob, 2 ether);
+        checkpoint("Bob deposit");
+
+        pool.withdraw(alice, 1 ether);
+        checkpoint("Alice withdraw");
+
+        hack();
+        checkpoint("After hack");
+
+        pp(renderCheckpointsGrid());
+
+    }
+
 
     function testFixLength() public {
-        console.log(SolPretty.fill("X", 80));
+        console2.log(SolPretty.fill("X", 80));
         string memory x = "a";
         string memory y = "bbbbbbbbbbb";
         assertTrue(SolPretty.fixLength(x, 80).eq(x.concat(SolPretty.spaces(79))));
@@ -451,6 +570,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         require(result.eq(expected));
         divider();
         SolPretty.Config memory config = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 18,
             displayDecimals: 5, // if this is less than fixedDecimals, value will be truncated
             decimalDelimiter: ".",
@@ -501,6 +621,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         uint256 target = 123456789987654321987654321;
         string memory expected = "1|2|3|4|5|6|7|8|9X9876 5432 19";
         SolPretty.Config memory config = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 18,
             displayDecimals: 10, // if this is less than fixedDecimals, value will be truncated
             decimalDelimiter: "X",
@@ -518,6 +639,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         uint256 target = 123456789987654321987654321;
         string memory expected = "1,234,567,899,876,543,219,876,543-21";
         SolPretty.Config memory config = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 2,
             displayDecimals: 10, // if this is less than fixedDecimals, value will be truncated
             decimalDelimiter: "-",
@@ -535,6 +657,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         uint256 target = 123456789987654321987654321;
         string memory expected = "123456789987654321O987X654X321";
         SolPretty.Config memory config = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 9,
             displayDecimals: 10,
             decimalDelimiter: "O",
@@ -565,6 +688,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
 
     function testFixedWidth() public {
         SolPretty.Config memory configWETH = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 18,
             displayDecimals: 4,
             decimalDelimiter: ".",
@@ -584,6 +708,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
 
     function testSolPrettytestWithoutSolPretty() public pure {
         SolPretty.Config memory configWETH = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 18,
             displayDecimals: 4,
             decimalDelimiter: ".",
@@ -596,6 +721,7 @@ contract SolPrettyTest is Test, SolPrettyTools {
         });
 
         SolPretty.Config memory configUSDC = SolPretty.Config({
+            labelWidth: 0,
             fixedDecimals: 6,
             displayDecimals: 4,
             decimalDelimiter: ".",
